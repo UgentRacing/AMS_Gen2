@@ -22,7 +22,7 @@ void spi_init(void){
 }
 
 /* Sends data */
-void spi_send(char data){
+inline void spi_send(char data){
 	/* Iterate over all bits */
 	uint8_t i;
 	for(i = 7; i >= 0; i--){ /* MSB first */
@@ -43,7 +43,7 @@ void spi_send(char data){
 }
 
 /* Receives data */
-void spi_receive(char* buffer){
+inline void spi_receive(char* buffer){
 	*buffer = 0b0; /* Reset Buffer */
 
 	/* Read 8 bits */

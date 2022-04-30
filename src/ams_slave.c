@@ -74,5 +74,11 @@ void ams_slave_read(
 /* Test if can communicate with slave over SPI */
 char ams_slave_test_spi(ams_slave* s){
 	/* Read Product ID Register */
+	char buff;
+	ams_slave_read(s, 0x00, &buff);
+
+	/* Check value */
+	return buff == 0b11110000;
 }
+
 

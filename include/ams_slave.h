@@ -10,6 +10,7 @@
 extern "C" {
 #endif
 
+
 /* Struct Definition */
 typedef struct {
 	uint8_t id; /* Unique ID of this slave */

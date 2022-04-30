@@ -1,6 +1,9 @@
 #ifndef _H_AMS_SLAVE
 #define _H_AMS_SLAVE
 
+#include <stdlib.h>
+#include <Arduino.h>
+
 /* Ensure compatibiltiy with C++ compiler */
 #ifdef __cplusplus
 extern "C" {
@@ -21,11 +24,27 @@ typedef struct {
 ams_slave* ams_slave_init(
 	uint8_t id,
 	uint8_t segment,
-	uint8_t pin_chip_select
+	uint8_t pin_chip_select,
+	void (*spi_send)(char),
+	char (*spi_receive)(void)
 );
 
 /* Frees all allocated memory */
 void ams_slave_free(ams_slave* s);
+
+/* Write register over SPI */
+void ams_slave_write(
+	ams_slave* s,
+	char reg, /* Register to write to */
+	char data /* Data to write to register */
+);
+
+/* Read register over SPI */
+void ams_slave_read(
+	ams_slave* s,
+	char reg, /* Register to write to */
+	char* buffer /* Buffer to write data to */
+);
 
 /* Test if can communicate with slave over SPI */
 char ams_slave_test_spi(ams_slave* s);

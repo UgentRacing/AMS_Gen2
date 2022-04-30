@@ -28,7 +28,7 @@ Because of the complexity of this system, the AMS is divided into several module
 
 The circuit schematics and PCB layouts were created by Torben Onselaere. The software of the AMS was written by Torben Onselaere and Thomas Van Acker.
 
-The software of the AMS is licensed under the GNU General Public License version 3. You can get a copy of the license via [this link](https://www.gnu.org/licenses/gpl-3.0.html).
+The software of the AMS is licensed under the GNU General Public License version 3. You may obtain copy of the license at [https://www.gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html).
 
 
 ## Code Structure

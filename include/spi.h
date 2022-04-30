@@ -17,8 +17,7 @@ The source code of this library is licensed under the GNU General Public License
 #define SPI_PIN_MOSI 11
 #define SPI_PIN_MISO 12
 #define SPI_PIN_CLK 13
-#define SPI_T_HIGH 200 /* in ns */
-#define SPI_T_LOW 200 /* in ns */
+#define SPI_T_4 100 /* period divided by 4 in ns */
 /* ======================== */
 
 #include <stdlib.h>
@@ -40,7 +39,7 @@ void spi_send(
 );
 
 /* Receives data */
-void spi_read(
+void spi_receive(
 	char* buffer /* Data will be stored in this buffer */
 );
 

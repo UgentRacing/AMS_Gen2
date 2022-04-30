@@ -5,14 +5,8 @@
 ams_slave* ams_slave_init(
 	uint8_t id,
 	uint8_t segment,
-	uint8_t pin_chip_select,
-	void (*spi_send)(char),
-	char (*spi_receive)(void)
+	uint8_t pin_chip_select
 ){
-	/* Check inputs */
-	if(spi_send == NULL) return NULL;
-	if(spi_receive == NULL) return NULL;
-
 	/* Allocate memory */
 	ams_slave* s = (ams_slave*) malloc(sizeof(ams_slave));
 
@@ -20,10 +14,6 @@ ams_slave* ams_slave_init(
 	s->id = id;
 	s->segment = segment;
 	s->pin_chip_select = pin_chip_select;
-
-	/* Set callbacks */
-	s->spi_send = spi_send;
-	s->spi_receive = spi_receive;
 
 	/* Init IO */
 	pinMode(s->pin_chip_select, OUTPUT);
@@ -47,16 +37,39 @@ void ams_slave_write(
 	digitalWriteFast(s->pin_chip_select, LOW); /* Active Low */
 
 	/* Send data */
-	s->spi_send(0b00010100); /* Slave address + Write bit */
+	spi_send(0b00010100); /* Slave address + Write bit */
 	delayNanoseconds(7000); /* SPI_t_WAIT */
-	s->spi_send(reg); /* Register address */
+	spi_send(reg); /* Register address */
 	delayNanoseconds(7000); /* SPI_t_WAIT */
-	s->spi_send(data); /* Data */
+	spi_send(data); /* Data */
 
 	/* Disable chip */
 	delayNanoseconds(250); /* SPI_t_LAG */
 	digitalWriteFast(s->pin_chip_select, HIGH);
 }
+
+
+/* Read register over SPI */
+void ams_slave_read(
+	ams_slave* s,
+	char reg, /* Register to write to */
+	char* buffer /* Buffer to write data to */
+){
+	/* Enable chip */
+	digitalWriteFast(s->pin_chip_select, LOW); /* Active Low */
+
+	/* Send data */
+	spi_send(0b00010101); /* Slave address + Read bit */
+	delayNanoseconds(7000); /* SPI_t_WAIT */
+	spi_send(reg); /* Register address */
+	delayNanoseconds(7000); /* SPI_t_WAIT */
+	spi_receive(buffer); /* Write data to buffer */
+
+	/* Disable chip */
+	delayNanoseconds(250); /* SPI_t_LAG */
+	digitalWriteFast(s->pin_chip_select, HIGH);
+};
+
 
 /* Test if can communicate with slave over SPI */
 char ams_slave_test_spi(ams_slave* s){

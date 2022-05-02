@@ -7,7 +7,7 @@
 
 /* Pin Definitions */
 #define PIN_DEBUG 13
-const uint8_t[NUM_SLAVES] PIN_CS_SLAVE = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0}; /* Why tho? */
+const uint8_t PIN_CS_SLAVE[NUM_SLAVES] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0}; /* Why tho? */
 
 
 /* Vars */
@@ -19,7 +19,7 @@ void setup() {
 	/* Setup IO */
 
 	/* Init slaves */
-	slaves = malloc(sizeof(ams_slave*) * NUM_SLAVES);
+	slaves = (ams_slave**) malloc(sizeof(ams_slave*) * NUM_SLAVES);
 	for(uint8_t i = 0; i < NUM_SLAVES; i++){
 		slaves[i] = ams_slave_init(
 			i, /* ID */

@@ -34,12 +34,12 @@ void spi_init(
 );
 
 /* Sends data */
-inline void spi_send(
+void spi_send(
 	char data /* Data to be sent */
 );
 
 /* Receives data */
-inline void spi_receive(
+void spi_receive(
 	char* buffer /* Data will be stored in this buffer */
 );
 

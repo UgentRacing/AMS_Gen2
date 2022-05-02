@@ -1,0 +1,89 @@
+Datasheet: https://www.renesas.com/us/en/document/dst/isl94216-datasheet
+
+Initialisatie:
+- 0x01.1 Scan type instellen op 1 voor single system scan on trigger ipv continuous scann
+- 0x02.7 V_CELL Enable op 1 om V_CELL te meten bij system scan
+- 0x02.6 DCHRWOV nog beslissen
+- 0x02.5 CHRWUV nog beslissen
+- 0x02.4:2 V_CELL Averages instellen om ruis weg te filteren (0.5 ms per sample, nog beslissen)
+- 0x03.7 I_PACK Enable op 1 om I_PACK te meten bij system scan
+- 0x03.6:5 OW Update instellen om frequentie van open wire scan uit te voeren (nog beslissen)
+- 0x03.4:2 I_PACK Averages instellen om ruis weg te filteren (0.5 ms per sample, nog beslissen)
+- 0x03.1 I_DIR Delay instellen om aantal samples voor current direction te bepalen (nog beslissen)
+- 0x04-0x05 Cell Select aanduiden welke cellen met IC verbonden zijn en welke voltages dus gecontroleerd moeten worden (hoeveel zijn het er alweer?)
+- 0x06 OV Threshold instellen wat de maximale cel voltage is zodat overvoltage fault correct werkt (welke waarde?)
+- 0x07 UV Threshold instellen wat de minimale cel voltage is zodat undervoltage fault correct werkt (welke waarde?)
+- 0x08 V_CELL Max Delta Threshold instellen wat de maximale verschil in celvoltages mag zijn voordat Delta V_CELL fault getriggered wordt (welke waarde?)
+- 0x09.7 AUX Pullup op 0 zetten om interne test pullup te disconnecten
+- 0x09.6:0 Fault Delays hebben geen invloed op werking aangezien we single triggered scans gebruiken ipv continous system scan
+- 0x0a.3:0 DSC Threshold instellen om short circuit threshold in te stellen zodat segment losgekoppeld wordt bij kortsluiting (welke waarde?)
+- 0x0b DOC Threshold instellen om overcurrent protection in te stellen (welke waarde?)
+- 0x0c.6:0 DSC Delay instellen om wachttijd tussen short circuit detectie en loskoppeling segment vast te leggen (gwn op 0 zetten zeker?)
+- 0x0d.7:4 Discharge Overcurrent Delay heeft geen invloed op single triggered scan
+- 0x0d.3:0 Charge Overcurrent Delay heeft geen invloed op single triggered scan
+- 0x0e.7 Connect for Discharge op 1 zetten om power FETs uit te schakelen indien overcurrent tijdens discharge gedetecteerd wordt
+- 0x0e.6:5 Enable Load Detection (wat doet dit? i dunno)
+- 0x0e.4 Enable Load Recovery (weeral iets ingewikkelds, hebben we dit nodig?)
+- 0x0e.3 Configure Power FET op 0 zetten omdat power FETs in serie staan (klopt, toch?)
+- 0x0e.2 FET Charge Driver Connect op 1 zetten om power FETs uit te schakelen indien overcurrent tijdens laden gedetecteerd wordt
+- 0x0e.1 Load Detect in Low Power mode maakt niet uit aangezien wij niet van plan zijn in low power mode te draaien (toch?)
+- 0x0f COC Threshold instellen om overcurrent protection in te stellen (welke waarde?)
+- 0x11.7:6 ETAUX Enable op 00 instellen om temperatuursmeting niet uit te voeren bij system scan, aangezien we dit manueel zullen triggeren wegens het gepruts met de mux
+- 0x11.4:2 ETAUX Averages geeft aan hoeveel samples genomen moeten worden bij temp meting (instellen op 000 voor 1 sample zeker?)
+- 0x12.7 ALRT Assert op 0 zetten, want bij 1 wordt ALRT altijd low voor testing purposes
+- 0x12.6 ALRT Pulse EN op 0 zetten voor continu low signaal bij alert
+- 0x12.5:4 GPIO Config op 01 instellen voor digital output
+- 0x13-1a ETAUX Thresholds instellen wat de threshold waarden zijn voor over/undertemperature fault bij temp lezing (geen idee wat die moeten zijn, reken jij dit uit? en wat is het verschil tussen die C en D thresholds?)
+- 0x22 Internal Over-Temperature Warning Threshold instellen met threshold voor internal temperature warning (nog geen fault)
+- 0x23 Internal Over-Temperature Fault Threshold instellen met threshold voor internal temperature fault (wel fault, schakelt ook FETs uit)
+- 0x1b.7:6 Communications Timeout op 11 instellen voor 4s wachttijd na laatste SPI communicatie en overgang naar LOW POWER mode (minstens elke 4s met chip praten zodat ie niet in slaap valt!) wordt eig gedisabled in 0x1f.1
+- 0x1b.5:4 Update Other geeft aan na hoeveel system scans ETAUS en power regulator checks uitgevoerd moeten worden, maar wordt genegeerd bij single triggered system scans
+- 0x1b.3:2 Load Detect Delay (weeral iets met die load dinges, wat is al die crap nu eig?)
+- 0x1c V_VCC Min Threshold stelt undervoltage detectie van interne regulator in (gebruiken we dit?)
+- 0x1d I_REG OC1 Threshold stelt overcurrent detectie van interne regulator in voor SCAN en IDLE mode (gebruiken we dit?)
+- 0x1e I_REG OC1 Threshold stelt overcurrent detectie van interne regulator in voor LOW POWER mode (gebruiken we dit?)
+- 0x1f.7 V_BAT1 Enable op 1 zetten om segment voltage te meten bij system scan
+- 0x1f.6 I_TEMP Enable op 1 zetten om interne temp te meten bij system scan
+- 0x1f.4:2 Other Averages geeft aan hoeveel samples er genomen moeten worden bij meting van oa VBAT1, VTEMP, IREG... (best 1 sample dus 000 zeker?)
+- 0x1f.1 Communication Timeout Enable op 0 zetten zodat ic niet in slaap valt wnr we er niet meer tegen babbelen
+- 0x20-21 VBAT1 Overvoltage en Undervoltage Thresholds (je kent het ondertussen wel vermoed ik...)
+- 0x24 Power FET Operation (tf is dit? zo voelde ik me op examen sysi...)
+- 0x83-89 Fault Masks instellen op allemaal 1 zodat eender welke fault de ALRT pin laag brengt, zodat master te weten komt dat een fault getriggered is
+
+
+
+Scan triggeren:
+- 0x01.0 System Trigger op 1 instellen zal system scan triggeren
+- 0x02.0 V_CELL Trigger op 1 instellen zal cell voltages meten (deze check zit ook in system scan)
+- 0x03.0 I_PACK Trigger op 1 instellen zal pack current meten (deze check zit ook in system scan)
+- 0x11.0 ETAUX Trigger op 1 instellen zal temp meten (moet manueel gebeuren, wegens 00 in 0x11.7:6)
+- 0x1b.0 V_REG Trigger op 1 instellen zal voltage regulator voltage (2x voltage (⌐□_□)) meten
+- 0x1F.5 I_TEMP Trigger op 1 instellen zal interne temp meten (deze check zit ook in system scan)
+- 0x1F.0 V_BAT1 Trigger op 1 instellen zal segment voltage meten (deze check zit ook in system scan)
+
+
+Uitlezen gegevens:
+- 0x03-0x4F V_CELL Voltages 16-bit waarden over telkens 2 registers geven de voltages van elke cel aan
+- 0x50-0x51 V_CELL Max Delta 16-bit waarde die verschil tussen hoogste cel waarde en laagste cel voltage (waarvoor zou dit gebruikt worden?)
+- 0x52-0x53 I_PACK Voltage 16-bit waarde die voltage drop over shunt resistor weergeeft in 2-complement
+- 0x54-0x57 I_PACK Timer 32-bit counter die timestamp van laatste current meten aangeeft (gebruiken we dit voor charge/energie te bepalen?)
+- 0x58-5b ETAUX Voltage 2x 16-bit waarden voor AUX0 en AUX1
+- 0x5c-5d V_BAT1 Voltage 16-bit voltage reading van totale segment
+- 0x5e Internal Temperature 8-bit voltage reading van interne temp sensor
+- 0x5f V_VTEMP 8-bit voltage reading van de VTEMP pin
+- 0x60 V_VCC 8-bit voltage reading van de VCC pin (real shit)
+- 0x61-62 I_REG Voltage 16-bit voltage drop reading over de sense resistor tussen EMITTER en VDD
+
+
+Faults:
+- 0x02.1 Clear Faults and Status op 1 zetten om alle registers 0x63-0x69 en alle counters op 0 zetten.
+- 0x63 Priority Faults bevat belangrijkste fouten
+- 0x64 ETAUX Faults bevat faults ivm de externe temp sensoren en alle bijhorende thresholds
+- 0x65 Other Faults bevat enkele miscellanious stuff
+- 0x66 Cell Balancing Status gaat over status van de cell balancing (duh) en enkele faults
+- 0x67 Status Register geeft algemene status van segment weer en enkele faults
+- 0x68-69 Open-Wire Faults geeft aan welke cellen losgekomen zijn
+
+GPIO:
+- 0x12.3:0 GPIO Status instellen om output van GPIO pins in te stellen
+

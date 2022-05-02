@@ -81,4 +81,10 @@ char ams_slave_test_spi(ams_slave* s){
 	return buff == 0b11110000;
 }
 
+/* Setup all registers of the slave IC with the correct values */
+void ams_slave_setup(ams_slave* s){
+	/* Checkout "slave_registers.txt" for more info */
+	/* TODO */
+}
+
 

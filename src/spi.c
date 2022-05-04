@@ -25,7 +25,7 @@ void spi_init(void){
 void spi_send(char data){
 	/* Iterate over all bits */
 	uint8_t i;
-	for(i = 7; i >= 0; i--){ /* MSB first */
+	for(i = 7; i < 8; i--){ /* MSB first, (i < 8 because unsigned int will overflow and never go below zero! */
 		/* Get bit to send */
 		char bit = (data >> i) & 0b1;
 

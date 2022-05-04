@@ -11,15 +11,19 @@ const uint8_t PIN_CS_SLAVE[NUM_SLAVES] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0}; /* 
 
 
 /* Vars */
-ams_slave** slaves;
+ams_slave* slaves[NUM_SLAVES];
 uint8_t blink_delay;
 
 /* SETUP */
 void setup() {
 	/* Setup IO */
+	pinMode(PIN_DEBUG, OUTPUT);
+	digitalWrite(PIN_DEBUG, LOW);
+
+	/* Init SPI */
+	spi_init();
 
 	/* Init slaves */
-	slaves = (ams_slave**) malloc(sizeof(ams_slave*) * NUM_SLAVES);
 	for(uint8_t i = 0; i < NUM_SLAVES; i++){
 		slaves[i] = ams_slave_init(
 			i, /* ID */

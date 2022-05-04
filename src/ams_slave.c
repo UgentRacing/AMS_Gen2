@@ -86,18 +86,18 @@ void ams_slave_setup(ams_slave* s){
 	/* Checkout "slave_registers.txt" for more info */
 	ams_slave_write(s, 0x01, 0b00000010);
 	ams_slave_write(s, 0x02, 0b10000000);
-	ams_slave_write(s, 0x03, 0b10000000);
-	ams_slave_write(s, 0x04, 0b11111100); /* CHECK! */
-	ams_slave_write(s, 0x05, 0b01111111); /* CHECK! */
-	ams_slave_write(s, 0x06, 0b11111111); /* TODO */
-	ams_slave_write(s, 0x07, 0b00000000); /* TODO */
+	ams_slave_write(s, 0x03, 0b00000000);
+	ams_slave_write(s, 0x04, s->type == TYPE_13 ? 0b11111100 : 0b11111000);
+	ams_slave_write(s, 0x05, s->type == TYPE_13 ? 0b01111111 : 0b00011111);
+	ams_slave_write(s, 0x06, 0b11011110);
+	ams_slave_write(s, 0x07, 0b10000110);
 	ams_slave_write(s, 0x08, 0b11111111); /* TODO */
 	ams_slave_write(s, 0x09, 0b00000000);
-	ams_slave_write(s, 0x0a, 0b00001111); /* TODO */
-	ams_slave_write(s, 0x0b, 0b11111111); /* TODO */
+	ams_slave_write(s, 0x0a, 0b00000000);
+	ams_slave_write(s, 0x0b, 0b11111111);
 	ams_slave_write(s, 0x0c, 0b00000000);
 	ams_slave_write(s, 0x0d, 0b00000000);
-	ams_slave_write(s, 0x0e, 0b10110100); /* TODO */
+	ams_slave_write(s, 0x0e, 0b00000000);
 	ams_slave_write(s, 0x0f, 0b11111111); /* TODO */
 	ams_slave_write(s, 0x10, 0b00000000); /* TODO */
 	ams_slave_write(s, 0x11, 0b00000000);

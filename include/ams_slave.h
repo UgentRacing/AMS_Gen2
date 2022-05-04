@@ -10,11 +10,15 @@
 extern "C" {
 #endif
 
+/* Define Types */
+
+
 
 /* Struct Definition */
 typedef struct {
 	uint8_t id; /* Unique ID of this slave */
 	uint8_t segment; /* Segment where this slave is located */
+	uint8_t type; /* Segment where this slave is located */
 	uint8_t pin_chip_select; /* Chip Select pin for the SPI communication */
 } ams_slave;
 

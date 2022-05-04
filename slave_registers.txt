@@ -6,7 +6,7 @@ Initialisatie:
 - 0x02.6 DCHRWOV nog beslissen
 - 0x02.5 CHRWUV nog beslissen
 - 0x02.4:2 V_CELL Averages instellen om ruis weg te filteren (0.5 ms per sample, nog beslissen)
-- 0x03.7 I_PACK Enable op 1 om I_PACK te meten bij system scan
+- 0x03.7 I_PACK Enable op 0 om I_PACK te niet te meten bij scan
 - 0x03.6:5 OW Update instellen om frequentie van open wire scan uit te voeren (nog beslissen)
 - 0x03.4:2 I_PACK Averages instellen om ruis weg te filteren (0.5 ms per sample, nog beslissen)
 - 0x03.1 I_DIR Delay instellen om aantal samples voor current direction te bepalen (nog beslissen)

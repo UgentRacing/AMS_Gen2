@@ -35,5 +35,14 @@ The software of the AMS is licensed under the GNU General Public License version
 
 **IMPORTANT:** Anyone working on the software for the AMS needs to be fully aware of the impact that they have on the safety and wellbeing of the driver. Any piece of code needs to be thoroughly tested and every edge case needs to be handled correctly. We simply cannot compromise the safety of our team members. Please code responsibly.
 
-(To be continued)
+The code for the AMS is *mostly* written in C. We chose this language because of it's efficiency and simplicity. The main source code file `./src/main.cpp` is written in C++ however. This is to be able to use external Teensy libraries that are written in C++. Please use C whenever possible.
+
+The software routines are divided into multiple files to make the whole system cleaner and more comprehensible. We follow the PlatformIO convention of putting `.h` header files inside the `./include/` directory and `.c` or `.cpp` files with function implementations in the `./src/` directory.
+
+The following list contains more information about each file:
+- `src/main.cpp`: Main code file of the PlatformIO project. It contains the glue code for the different libraries and functions that are used to perform the various checks. When reading this file, it should be immediately obvious what the code does.
+- `include/spi.h` and `src/spi.c`: Simple and dead fast SPI library to send and receive data over SPI. These functions are used by the other files and should not be called directly from the main code.
+- `include/ams_slave.h` and `src/ams_slave.c`: Higher-level abstraction of the AMS slaves. The files define methods to initialize an `ams_slave` struct and perform various basic functions like writing to a slave IC register, reading from one, setting up all registers correctly and so on.
+
+When adding new features to the code, please do so on a new git branch and submit your changes using a pull request. Directly pushing to the `main` branch is not possible.
 

@@ -2,12 +2,12 @@
 #include "ams_slave.h"
 
 /* Config */
-#define NUM_SLAVES 11 /* Total number of slaves */
-#define NUM_SEGMENTS 6 /* Total number of segments */
+#define NUM_SLAVES 1 /* Total number of slaves */
+#define NUM_SEGMENTS 1 /* Total number of segments */
 
 /* Pin Definitions */
-#define PIN_DEBUG 13
-const uint8_t PIN_CS_SLAVE[NUM_SLAVES] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0}; /* Why tho? */
+#define PIN_DEBUG 14
+const uint8_t PIN_CS_SLAVE[NUM_SLAVES] = {1};
 
 
 /* Vars */

@@ -46,6 +46,7 @@ void spi_send(char data){
 void spi_receive(char* buffer){
 	*buffer = 0b0; /* Reset Buffer */
 
+
 	/* Read 8 bits */
 	uint8_t i;
 	for(i = 0; i < 8; i++){
@@ -55,11 +56,12 @@ void spi_receive(char* buffer){
 		delayNanoseconds(SPI_T_4); /* Wait time clock high */
 		digitalWriteFast(SPI_PIN_CLK, LOW);
 		delayNanoseconds(SPI_T_4); /* Setup time */
-		delayNanoseconds(SPI_T_4); /* Setup time */
 
 		/* Store value in buffer */
 		char bit = digitalReadFast(SPI_PIN_MISO);
 		*buffer = (*buffer << 1) | (bit & 0b1);
+
+		delayNanoseconds(SPI_T_4); /* Setup time */
 	}
 }
 

@@ -28,6 +28,7 @@ void setup() {
 		slaves[i] = ams_slave_init(
 			i, /* ID */
 			i / NUM_SEGMENTS, /* Segment ID */
+			TYPE_13, /* Type */
 			PIN_CS_SLAVE[i] /* Chip Select pin */
 		);
 	}

@@ -11,14 +11,18 @@ extern "C" {
 #endif
 
 /* Define Types */
-
+enum slave_type {
+	TYPE_13,
+	TYPE_10
+};
+typedef enum slave_type slave_type_t;
 
 
 /* Struct Definition */
 typedef struct {
 	uint8_t id; /* Unique ID of this slave */
 	uint8_t segment; /* Segment where this slave is located */
-	uint8_t type; /* Segment where this slave is located */
+	slave_type_t type; /* Type of this slave */
 	uint8_t pin_chip_select; /* Chip Select pin for the SPI communication */
 } ams_slave;
 
@@ -27,6 +31,7 @@ typedef struct {
 ams_slave* ams_slave_init(
 	uint8_t id,
 	uint8_t segment,
+	slave_type_t type,
 	uint8_t pin_chip_select
 );
 

@@ -101,38 +101,44 @@ void ams_slave_setup(ams_slave* s){
 	ams_slave_write(s, 0x0d, 0b00000000);
 	ams_slave_write(s, 0x0e, 0b00000000);
 	ams_slave_write(s, 0x0f, 0b11111111);
-	ams_slave_write(s, 0x10, 0b00000000); /* TODO */
+	ams_slave_write(s, 0x10, 0b00000000); /* TODO CHARGING */
 	ams_slave_write(s, 0x11, 0b00000000);
 	ams_slave_write(s, 0x12, 0b00010000);
-	ams_slave_write(s, 0x13, 0b11111111); /* TODO */
-	ams_slave_write(s, 0x14, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x15, 0b11111111); /* TODO */
-	ams_slave_write(s, 0x16, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x17, 0b11111111); /* TODO */
-	ams_slave_write(s, 0x18, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x19, 0b11111111); /* TODO */
-	ams_slave_write(s, 0x1a, 0b00000000); /* TODO */
+	ams_slave_write(s, 0x13, 0b11111111); /* TODO TEMPERATURE */
+	ams_slave_write(s, 0x14, 0b00000000); /* TODO TEMPERATURE */
+	ams_slave_write(s, 0x15, 0b11111111); /* TODO TEMPERATURE */
+	ams_slave_write(s, 0x16, 0b00000000); /* TODO TEMPERATURE */
+	ams_slave_write(s, 0x17, 0b11111111); /* TODO TEMPERATURE */
+	ams_slave_write(s, 0x18, 0b00000000); /* TODO TEMPERATURE */
+	ams_slave_write(s, 0x19, 0b11111111); /* TODO TEMPERATURE */
+	ams_slave_write(s, 0x1a, 0b00000000); /* TODO TEMPERATURE */
 	ams_slave_write(s, 0x1b, 0b11000010);
-	ams_slave_write(s, 0x1c, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x1d, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x1e, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x1f, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x20, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x21, 0b00000000); /* TODO */
+	ams_slave_write(s, 0x1c, 0b00000000);
+	ams_slave_write(s, 0x1d, 0b11111111);
+	ams_slave_write(s, 0x1e, 0b11111111);
+	ams_slave_write(s, 0x1f, 0b11000000);
+	ams_slave_write(s, 0x20, s->type == TYPE_13 ? 0b10110100 : 0b10001010);
+	ams_slave_write(s, 0x21, s->type == TYPE_13 ? 0b01101011 : 0b01010010);
 	ams_slave_write(s, 0x22, 0b01010001);
 	ams_slave_write(s, 0x23, 0b01000101);
-	ams_slave_write(s, 0x24, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x25, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x26, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x27, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x28, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x29, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x2a, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x2b, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x2c, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x2d, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x2e, 0b00000000); /* TODO */
-	ams_slave_write(s, 0x2f, 0b00000000); /* TODO */
+	ams_slave_write(s, 0x24, 0b01000000);
+	ams_slave_write(s, 0x25, 0b00000000); /* TODO CELL BALANCING */
+	ams_slave_write(s, 0x26, 0b00000000); /* TODO CELL BALANCING */
+	ams_slave_write(s, 0x27, 0b00000000); /* TODO CELL BALANCING */
+	ams_slave_write(s, 0x28, 0b00000000); /* TODO CELL BALANCING */
+	ams_slave_write(s, 0x29, 0b00000000); /* TODO CELL BALANCING */
+	ams_slave_write(s, 0x2a, 0b00000000); /* TODO CELL BALANCING */
+	ams_slave_write(s, 0x2b, 0b11111111); /* TODO CELL BALANCING */
+	ams_slave_write(s, 0x2c, 0b00000000); /* TODO CELL BALANCING */
+	ams_slave_write(s, 0x2d, 0b11111111); /* TODO CELL BALANCING */
+	ams_slave_write(s, 0x2e, 0b00000011);
+	ams_slave_write(s, 0x83, 0b11111111);
+	ams_slave_write(s, 0x84, 0b11111111);
+	ams_slave_write(s, 0x85, 0b11111111);
+	ams_slave_write(s, 0x86, 0b11111111);
+	ams_slave_write(s, 0x87, 0b11111111);
+	ams_slave_write(s, 0x88, 0b11111111);
+	ams_slave_write(s, 0x89, 0b11111111);
 }
 
 

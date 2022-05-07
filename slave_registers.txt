@@ -1,7 +1,7 @@
 Datasheet: https://www.renesas.com/us/en/document/dst/isl94216-datasheet
 
 Initialisatie:
-- 0x01.1 Scan type instellen op 1 voor single system scan on trigger ipv continuous scann
+- 0x01.1 Scan type instellen op 1 voor single system scan on trigger ipv continuous scan
 - 0x02.7 V_CELL Enable op 1 om V_CELL te meten bij system scan
 - 0x02.6 DCHRWOV nog beslissen
 - 0x02.5 CHRWUV nog beslissen

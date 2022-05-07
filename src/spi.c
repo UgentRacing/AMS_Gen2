@@ -37,6 +37,9 @@ void spi_send(char data)
 		delayNanoseconds(SPI_T_4); /* Setup time */
 		digitalWriteFast(SPI_PIN_CLK, HIGH);
 		delayNanoseconds(SPI_T_4); /* Hold time */
+		// TODO: why do you need the double wait?
+		// 1 thought it was:
+		// set bit - clk low for 1 - clock high for 1 - repeat with new bit
 		delayNanoseconds(SPI_T_4); /* Wait time clock high */
 		digitalWriteFast(SPI_PIN_CLK, LOW);
 		delayNanoseconds(SPI_T_4); /* Wait time clock low */

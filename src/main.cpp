@@ -127,7 +127,7 @@ void loop()
 		ams_slave_read_voltages(slaves[i], buff);
 
 		/* Send CAN messages */
-		uint8_t num = slaves[i]->type == TYPE_13 ? 13 : 10;
+		uint8_t num = slaves[i]->type;
 		for (uint8_t j = 0; j < num; j++)
 		{
 			CAN_message_t m;

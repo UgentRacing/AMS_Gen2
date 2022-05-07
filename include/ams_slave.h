@@ -14,8 +14,8 @@ extern "C"
 	/* Define Types */
 	enum slave_type
 	{
-		TYPE_13,
-		TYPE_10
+		TYPE_13 = 13,
+		TYPE_10 = 10,
 	};
 	typedef enum slave_type slave_type_t;
 

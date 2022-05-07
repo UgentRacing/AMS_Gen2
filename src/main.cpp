@@ -58,5 +58,23 @@ void loop() {
 	delay(blink_delay);
 	digitalWrite(PIN_DEBUG, LOW);
 	delay(blink_delay);
+
+	/* Perform voltage scan */
+	for(uint8_t i=0; i<NUM_SLAVES; i++){
+		ams_slave_trigger_system_scan(slaves[i]);
+	}
+	for(uint8_t i=0; i<NUM_SLAVES; i++){
+		/* Wait until scan complete */
+		while(!ams_slave_is_idle(slaves[i])){
+			delayMicroseconds(10);
+		}
+
+		/* Read values */
+		uint16_t buff[16];
+		ams_slave_read_voltages(slaves[i], buff);
+
+		/* Send over CAN */
+		/* TODO */
+	}
 }
 

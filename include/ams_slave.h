@@ -58,6 +58,17 @@ char ams_slave_test_spi(ams_slave* s);
 /* Setup all registers of the slave IC with the correct values */
 void ams_slave_setup(ams_slave* s);
 
+/* Wait until slave is not busy */
+char ams_slave_is_idle(ams_slave* s);
+
+/* Trigger a single system scan */
+void ams_slave_trigger_system_scan(ams_slave* s);
+
+/* Read results from scan */
+void ams_slave_read_voltages(
+	ams_slave* s,
+	uint16_t* buff /* Buffer to write data to */
+);
 
 
 #ifdef __cplusplus

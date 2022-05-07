@@ -143,4 +143,46 @@ void ams_slave_setup(ams_slave* s){
 	ams_slave_write(s, 0x89, 0b11111111);
 }
 
+/* Check if slave is not busy */
+char ams_slave_is_idle(ams_slave* s){
+	/* Get busy bit */
+	char buff;
+	ams_slave_read(s, 0x01, &buff);
+	char busy = (buff >> 2) & 0b1; /* bit 2 */
+	return (~busy) & 0b1;
+}
+
+/* Trigger a single system scan */
+void ams_slave_trigger_system_scan(ams_slave* s){
+	/* Set trigger bit */
+	char buff;
+	ams_slave_read(s, 0x01, &buff);
+	ams_slave_write(s, 0x01, buff | 0b1); /* bit 0 */
+}
+
+/* Read voltages */
+void ams_slave_read_voltages(ams_slave* s, uint16_t* buff){
+	char buff0, buff1;
+
+	/* Read cell enable register to se which cells are connected */
+	ams_slave_read(s, 0x04, &buff0);
+	ams_slave_read(s, 0x05, &buff1);
+	uint16_t cell_enabled = (buff0 << 8) | buff1;
+
+	/* Read voltage registers */
+	uint8_t j = 0;
+	char enabled;
+	for(uint8_t i=0; i<16; i++){
+		/* Only read if enabled */
+		enabled = cell_enabled & 0b1;
+		cell_enabled = cell_enabled >> 1;
+		if(!enabled) continue;
+
+		/* Read value */
+		ams_slave_read(s, 0x30 + 2*i, &buff0); /* MSB */
+		ams_slave_read(s, 0x30 + 2*i + 1, &buff1); /* LSB */
+		buff[j] = (buff0 << 8) | buff1;
+		j++;
+	}
+}
 

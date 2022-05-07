@@ -80,6 +80,25 @@ void loop() {
 	digitalWrite(PIN_DEBUG, LOW);
 	delay(blink_delay);
 
+	/* Dump register map */
+	for(uint8_t i=0; i<NUM_SLAVES; i++){
+		for(char r=0x00; r<0x8a; r++){
+			/* Read values */
+			char buff;
+			ams_slave_read(slaves[i], r, &buff);
+
+			/* Send CAN messages */
+			CAN_message_t m;
+			m.id = 0x06;
+			m.buf[0] = slaves[i]->segment;
+			m.buf[1] = i;
+			m.buf[2] = r;
+			m.buf[3] = buff;
+			can.write(m);
+			delayMicroseconds(10);
+		}
+	}
+
 	/* Perform voltage scan */
 	for(uint8_t i=0; i<NUM_SLAVES; i++){
 		ams_slave_trigger_system_scan(slaves[i]);

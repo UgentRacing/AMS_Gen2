@@ -1,15 +1,14 @@
 #include "ams_slave.h"
 
-
 /* Initializes a new ams_slave struct and return pointer to the object */
-ams_slave* ams_slave_init(
+ams_slave *ams_slave_init(
 	uint8_t id,
 	uint8_t segment,
 	slave_type_t type,
-	uint8_t pin_chip_select
-){
+	uint8_t pin_chip_select)
+{
 	/* Allocate memory */
-	ams_slave* s = (ams_slave*) malloc(sizeof(ams_slave));
+	ams_slave *s = (ams_slave *)malloc(sizeof(ams_slave));
 
 	/* Store config */
 	s->id = id;
@@ -25,25 +24,27 @@ ams_slave* ams_slave_init(
 }
 
 /* Frees all allocated memory */
-void ams_slave_free(ams_slave* s){
+void ams_slave_free(ams_slave *s)
+{
 	free(s);
 }
 
 /* Write register over SPI */
 void ams_slave_write(
-	ams_slave* s,
+	ams_slave *s,
 	char reg, /* Register to write to */
 	char data /* Data to write to register */
-){
+)
+{
 	/* Enable chip */
 	digitalWriteFast(s->pin_chip_select, LOW); /* Active Low */
 
 	/* Send data */
-	spi_send(0b00010100); /* Slave address + Write bit */
+	spi_send(0b00010100);	/* Slave address + Write bit */
 	delayNanoseconds(7000); /* SPI_t_WAIT */
-	spi_send(reg); /* Register address */
+	spi_send(reg);			/* Register address */
 	delayNanoseconds(7000); /* SPI_t_WAIT */
-	spi_send(data); /* Data */
+	spi_send(data);			/* Data */
 
 	/* Disable chip */
 	delayNanoseconds(250); /* SPI_t_LAG */
@@ -51,22 +52,22 @@ void ams_slave_write(
 	delayNanoseconds(7000); /* SPI_t_WAIT */
 }
 
-
 /* Read register over SPI */
 void ams_slave_read(
-	ams_slave* s,
-	char reg, /* Register to write to */
-	char* buffer /* Buffer to write data to */
-){
+	ams_slave *s,
+	char reg,	 /* Register to write to */
+	char *buffer /* Buffer to write data to */
+)
+{
 	/* Enable chip */
 	digitalWriteFast(s->pin_chip_select, LOW); /* Active Low */
 
 	/* Send data */
-	spi_send(0b00010101); /* Slave address + Read bit */
+	spi_send(0b00010101);	/* Slave address + Read bit */
 	delayNanoseconds(7000); /* SPI_t_WAIT */
-	spi_send(reg); /* Register address */
+	spi_send(reg);			/* Register address */
 	delayNanoseconds(7000); /* SPI_t_WAIT */
-	spi_receive(buffer); /* Write data to buffer */
+	spi_receive(buffer);	/* Write data to buffer */
 
 	/* Disable chip */
 	delayNanoseconds(250); /* SPI_t_LAG */
@@ -74,9 +75,9 @@ void ams_slave_read(
 	delayNanoseconds(7000); /* SPI_t_WAIT */
 };
 
-
 /* Test if can communicate with slave over SPI */
-char ams_slave_test_spi(ams_slave* s){
+char ams_slave_test_spi(ams_slave *s)
+{
 	/* Read Product ID Register */
 	char buff;
 	ams_slave_read(s, 0x00, &buff);
@@ -86,7 +87,8 @@ char ams_slave_test_spi(ams_slave* s){
 }
 
 /* Setup all registers of the slave IC with the correct values */
-void ams_slave_setup(ams_slave* s){
+void ams_slave_setup(ams_slave *s)
+{
 	/* Checkout "slave_registers.txt" for more info */
 	ams_slave_write(s, 0x01, 0b00000010);
 	ams_slave_write(s, 0x02, 0b10000000);
@@ -144,7 +146,8 @@ void ams_slave_setup(ams_slave* s){
 }
 
 /* Check if slave is not busy */
-char ams_slave_is_idle(ams_slave* s){
+char ams_slave_is_idle(ams_slave *s)
+{
 	/* Get busy bit */
 	char buff;
 	ams_slave_read(s, 0x01, &buff);
@@ -153,7 +156,8 @@ char ams_slave_is_idle(ams_slave* s){
 }
 
 /* Trigger a single system scan */
-void ams_slave_trigger_system_scan(ams_slave* s){
+void ams_slave_trigger_system_scan(ams_slave *s)
+{
 	/* Set trigger bit */
 	char buff;
 	ams_slave_read(s, 0x01, &buff);
@@ -161,7 +165,8 @@ void ams_slave_trigger_system_scan(ams_slave* s){
 }
 
 /* Read voltages */
-void ams_slave_read_voltages(ams_slave* s, uint16_t* buff){
+void ams_slave_read_voltages(ams_slave *s, uint16_t *buff)
+{
 	char buff0, buff1;
 
 	/* Read cell enable register to se which cells are connected */
@@ -172,17 +177,18 @@ void ams_slave_read_voltages(ams_slave* s, uint16_t* buff){
 	/* Read voltage registers */
 	uint8_t j = 0;
 	char enabled;
-	for(uint8_t i=0; i<16; i++){
+	for (uint8_t i = 0; i < 16; i++)
+	{
 		/* Only read if enabled */
 		enabled = cell_enabled & 0b1;
 		cell_enabled = cell_enabled >> 1;
-		if(!enabled) continue;
+		if (!enabled)
+			continue;
 
 		/* Read value */
-		ams_slave_read(s, 0x30 + 2*i, &buff0); /* MSB */
-		ams_slave_read(s, 0x30 + 2*i + 1, &buff1); /* LSB */
+		ams_slave_read(s, 0x30 + 2 * i, &buff0);	 /* MSB */
+		ams_slave_read(s, 0x30 + 2 * i + 1, &buff1); /* LSB */
 		buff[j] = (buff0 << 8) | buff1;
 		j++;
 	}
 }
-

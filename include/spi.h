@@ -25,23 +25,24 @@ The source code of this library is licensed under the GNU General Public License
 
 /* Ensure compatibility with C++ compiler */
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* Initializes SPI */
-void spi_init(
-	void /* Nothing here yet :( */
-);
+	/* Initializes SPI */
+	void spi_init(
+		void /* Nothing here yet :( */
+	);
 
-/* Sends data */
-void spi_send(
-	char data /* Data to be sent */
-);
+	/* Sends data */
+	void spi_send(
+		char data /* Data to be sent */
+	);
 
-/* Receives data */
-void spi_receive(
-	char* buffer /* Data will be stored in this buffer */
-);
+	/* Receives data */
+	void spi_receive(
+		char *buffer /* Data will be stored in this buffer */
+	);
 
 #ifdef __cplusplus
 }

@@ -48,6 +48,7 @@ void ams_slave_write(
 	/* Disable chip */
 	delayNanoseconds(250); /* SPI_t_LAG */
 	digitalWriteFast(s->pin_chip_select, HIGH);
+	delayNanoseconds(7000); /* SPI_t_WAIT */
 }
 
 
@@ -70,6 +71,7 @@ void ams_slave_read(
 	/* Disable chip */
 	delayNanoseconds(250); /* SPI_t_LAG */
 	digitalWriteFast(s->pin_chip_select, HIGH);
+	delayNanoseconds(7000); /* SPI_t_WAIT */
 };
 
 

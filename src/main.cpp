@@ -12,7 +12,7 @@ const uint8_t PIN_CS_SLAVE[NUM_SLAVES] = {1};
 
 /* Vars */
 ams_slave* slaves[NUM_SLAVES];
-uint8_t blink_delay;
+uint16_t blink_delay = 1000; /* OK blink */
 
 /* SETUP */
 void setup() {
@@ -34,11 +34,21 @@ void setup() {
 	}
 
 	/* Check is slaves are connected */
-	char success = 0b1;
 	for(uint8_t i = 0; i < NUM_SLAVES; i++){
-		success &= ams_slave_test_spi(slaves[i]);
+		char success = ams_slave_test_spi(slaves[i]);
+
+		/* Check if successful */
+		if(!success){
+			blink_delay = 100; /* Error blink */
+
+			/* TODO: Send CAN message */
+
+			continue;
+		}
+
+		/* Setup register map */
+		ams_slave_setup(slaves[i]);
 	}
-	blink_delay = success ? 1000 : 200;
 }
 
 /* LOOP */

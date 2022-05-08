@@ -25,6 +25,8 @@ void can_init(){
 	can.setMaxMB(16);
 	can.enableFIFO();
 	can.onReceive(can_on_receive);
+
+	Serial.begin(115200);
 }
 
 /* SETUP */
@@ -68,7 +70,7 @@ void setup() {
 		}
 
 		/* Setup register map */
-		ams_slave_setup(slaves[i]);
+		// ams_slave_setup(slaves[i]);
 	}
 }
 
@@ -95,6 +97,13 @@ void loop() {
 			m.buf[2] = r;
 			m.buf[3] = buff;
 			can.write(m);
+
+			Serial.println(buff == 0b11110000 ? "correct" : "false");
+			Serial.printf("(%d) [%d] %d\t\t- ", i, r, buff);
+			for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
+				Serial.printf("%s", (buff & x) ? "1" : "0");
+			Serial.println("");
+
 			delayMicroseconds(10);
 		}
 	}

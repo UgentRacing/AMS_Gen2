@@ -22,7 +22,7 @@ void spi_init(void)
 	digitalWriteFast(SPI_PIN_CLK, LOW);
 }
 
-/* Sends data */
+/* Sends data, based on Figure 122 (p130) of the datasheet */
 void spi_send(char data)
 {
 	/* Iterate over all bits */
@@ -37,21 +37,27 @@ void spi_send(char data)
 		delayNanoseconds(SPI_T_4); /* Setup time */
 		digitalWriteFast(SPI_PIN_CLK, HIGH);
 		delayNanoseconds(SPI_T_4); /* Hold time */
-		// TODO: why do you need the double wait?
-		// 1 thought it was:
-		// set bit - clk low for 1 - clock high for 1 - repeat with new bit
 		delayNanoseconds(SPI_T_4); /* Wait time clock high */
 		digitalWriteFast(SPI_PIN_CLK, LOW);
 		delayNanoseconds(SPI_T_4); /* Wait time clock low */
 	}
 	digitalWriteFast(SPI_PIN_MOSI, LOW); /* Reset MOSI */
-	delayNanoseconds(SPI_T_4);			 /* Wait time clock low */
+	delayNanoseconds(SPI_T_4); /* Wait time clock low */
 }
 
 /* Receives data */
 void spi_receive(char *buffer)
 {
 	*buffer = 0b0; /* Reset Buffer */
+
+	/* Start with one clock cycle */
+	digitalWriteFast(SPI_PIN_CLK, HIGH);
+	delayNanoseconds(SPI_T_4); /* Wait time clock high */
+	delayNanoseconds(SPI_T_4); /* Wait time clock high */
+	digitalWriteFast(SPI_PIN_CLK, LOW);
+	delayNanoseconds(SPI_T_4); /* Setup time */
+	delayNanoseconds(SPI_T_4); /* Setup time */
+
 
 	/* Read 8 bits */
 	uint8_t i;
@@ -60,14 +66,14 @@ void spi_receive(char *buffer)
 		/* Clock in bit */
 		digitalWriteFast(SPI_PIN_CLK, HIGH);
 		delayNanoseconds(SPI_T_4); /* Wait time clock high */
-		delayNanoseconds(SPI_T_4); /* Wait time clock high */
-		digitalWriteFast(SPI_PIN_CLK, LOW);
-		delayNanoseconds(SPI_T_4); /* Setup time */
-
+		
 		/* Store value in buffer */
 		char bit = digitalReadFast(SPI_PIN_MISO);
 		*buffer = (*buffer << 1) | (bit & 0b1);
 
+		delayNanoseconds(SPI_T_4); /* Wait time clock high */
+		digitalWriteFast(SPI_PIN_CLK, LOW);
+		delayNanoseconds(SPI_T_4); /* Setup time */
 		delayNanoseconds(SPI_T_4); /* Setup time */
 	}
 }

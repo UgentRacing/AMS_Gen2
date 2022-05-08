@@ -148,7 +148,9 @@ void ams_slave_setup(ams_slave* s){
 	ams_slave_write(s, 0x88, 0b11111111);
 	ams_slave_write(s, 0x89, 0b11111111);
 
-	// ams_slave_write(s, 0x2e, 0b01011011);
+	// Try to get into SCAN mode
+	delayMicroseconds(100);
+	ams_slave_write(s, 0x2e, 0b01011011);
 }
 
 /* Check if slave is not busy */

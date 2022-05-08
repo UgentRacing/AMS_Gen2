@@ -117,9 +117,12 @@ void loop()
 		}
 	}
 
+	Serial.println("Start scan");
+
 	/* Perform voltage scan */
 	for (uint8_t i = 0; i < NUM_SLAVES; i++)
 	{
+		ams_slave_write(slaves[i], 0x2e, 0b01011011);
 		char buff;
 		ams_slave_read(slaves[i], 0x01, &buff);
 		Serial.printf("scan - 0x01: ");
@@ -127,8 +130,19 @@ void loop()
 			Serial.printf("%s", (buff & x) ? "1" : "0");
 		Serial.println("");
 
+		ams_slave_read(slaves[i], 0x2e, &buff);
+		Serial.printf("scan - 0x2e: ");
+		for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
+			Serial.printf("%s", (buff & x) ? "1" : "0");
+		Serial.println("");
+		
+		ams_slave_write(slaves[i], 0x2e, 0b01011011);
+
 		ams_slave_trigger_system_scan(slaves[i]);
 	}
+
+	Serial.println("Wait scan to end");
+
 	for (uint8_t i = 0; i < NUM_SLAVES; i++)
 	{
 		/* Wait until scan complete */
@@ -143,6 +157,7 @@ void loop()
 				Serial.printf("%s", (buff & x) ? "1" : "0");
 			Serial.println("");
 		}
+		Serial.println("Scan ended, readout values");
 
 		/* Read values */
 		uint16_t buff[16];

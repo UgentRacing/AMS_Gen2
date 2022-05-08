@@ -27,6 +27,8 @@ void can_init()
 	can.setMaxMB(16);
 	can.enableFIFO();
 	can.onReceive(can_on_receive);
+
+	Serial.begin(115200);
 }
 
 /* SETUP */
@@ -70,11 +72,15 @@ void setup()
 			m.buf[1] = slaves[i]->segment;
 			can.write(m);
 
+			Serial.printf("Problem with slave %d\n", i);
+
 			continue;
 		}
 
 		/* Setup register map */
 		ams_slave_setup(slaves[i]);
+
+		Serial.printf("Set up slave %d\n", i);
 	}
 }
 
@@ -104,6 +110,13 @@ void loop()
 			m.buf[2] = r;
 			m.buf[3] = buff;
 			can.write(m);
+
+			Serial.printf("(%d) [%d] ", i, r);
+
+			for (unsigned x = (1 << 7); x > 0; x = x / 2)
+				Serial.printf("%s", (buff & x) ? "1" : "0");
+			Serial.println("");
+
 			delayMicroseconds(10);
 		}
 	}

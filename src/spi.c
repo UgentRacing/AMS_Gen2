@@ -68,7 +68,7 @@ void spi_receive(char *buffer)
 		delayNanoseconds(SPI_T_4); /* Wait time clock high */
 		
 		/* Store value in buffer */
-		const uint8_t bit = digitalReadFast(SPI_PIN_MISO);
+		const char bit = digitalReadFast(SPI_PIN_MISO);
 		*buffer = (*buffer << 1) | bit;
 
 		delayNanoseconds(SPI_T_4); /* Wait time clock high */

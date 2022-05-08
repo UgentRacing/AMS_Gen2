@@ -35,6 +35,12 @@ void ams_slave_write(
 	char reg, /* Register to write to */
 	char data /* Data to write to register */
 ){
+	/* Wait until the slave isn't busy */
+	/* NOT SURE IF THIS IS NEEDED */
+	while(!ams_slave_is_idle(s)){
+		delayMicroseconds(10);
+	}
+
 	/* Enable chip */
 	digitalWriteFast(s->pin_chip_select, LOW); /* Active Low */
 
@@ -114,7 +120,7 @@ void ams_slave_setup(ams_slave* s){
 	ams_slave_write(s, 0x18, 0b00000000); /* TODO TEMPERATURE */
 	ams_slave_write(s, 0x19, 0b11111111); /* TODO TEMPERATURE */
 	ams_slave_write(s, 0x1a, 0b00000000); /* TODO TEMPERATURE */
-	ams_slave_write(s, 0x1b, 0b11000010);
+	// ams_slave_write(s, 0x1b, 0b11000010); // SUS
 	ams_slave_write(s, 0x1c, 0b00000000);
 	ams_slave_write(s, 0x1d, 0b11111111);
 	ams_slave_write(s, 0x1e, 0b11111111);
@@ -133,7 +139,7 @@ void ams_slave_setup(ams_slave* s){
 	ams_slave_write(s, 0x2b, 0b11111111); /* TODO CELL BALANCING */
 	ams_slave_write(s, 0x2c, 0b00000000); /* TODO CELL BALANCING */
 	ams_slave_write(s, 0x2d, 0b11111111); /* TODO CELL BALANCING */
-	ams_slave_write(s, 0x2e, 0b00000011);
+	// ams_slave_write(s, 0x2e, 0b00000011); // SUS
 	ams_slave_write(s, 0x83, 0b11111111);
 	ams_slave_write(s, 0x84, 0b11111111);
 	ams_slave_write(s, 0x85, 0b11111111);
@@ -141,6 +147,8 @@ void ams_slave_setup(ams_slave* s){
 	ams_slave_write(s, 0x87, 0b11111111);
 	ams_slave_write(s, 0x88, 0b11111111);
 	ams_slave_write(s, 0x89, 0b11111111);
+
+	// ams_slave_write(s, 0x2e, 0b01011011);
 }
 
 /* Check if slave is not busy */

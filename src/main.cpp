@@ -3,7 +3,7 @@
 #include "ams_slave.h"
 
 /* Config */
-#define NUM_SLAVES 1 /* Total number of slaves */
+#define NUM_SLAVES 1   /* Total number of slaves */
 #define NUM_SEGMENTS 1 /* Total number of segments */
 
 /* Pin Definitions */
@@ -12,14 +12,15 @@ const uint8_t PIN_CS_SLAVE[NUM_SLAVES] = {1};
 
 /* Vars */
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can;
-ams_slave* slaves[NUM_SLAVES];
+ams_slave *slaves[NUM_SLAVES];
 uint16_t blink_delay = 1000; /* OK blink */
 
 /* CAN */
-void can_on_receive(const CAN_message_t &msg){
-
+void can_on_receive(const CAN_message_t &msg)
+{
 }
-void can_init(){
+void can_init()
+{
 	can.begin();
 	can.setBaudRate(1000000);
 	can.setMaxMB(16);
@@ -30,7 +31,8 @@ void can_init(){
 }
 
 /* SETUP */
-void setup() {
+void setup()
+{
 	/* Setup IO */
 	pinMode(PIN_DEBUG, OUTPUT);
 	digitalWrite(PIN_DEBUG, LOW);
@@ -42,21 +44,24 @@ void setup() {
 	spi_init();
 
 	/* Init slaves */
-	for(uint8_t i = 0; i < NUM_SLAVES; i++){
+	for (uint8_t i = 0; i < NUM_SLAVES; i++)
+	{
 		slaves[i] = ams_slave_init(
-			i, /* ID */
+			i,				  /* ID */
 			i / NUM_SEGMENTS, /* Segment ID */
-			TYPE_13, /* Type */
-			PIN_CS_SLAVE[i] /* Chip Select pin */
+			TYPE_13,		  /* Type */
+			PIN_CS_SLAVE[i]	  /* Chip Select pin */
 		);
 	}
 
 	/* Check is slaves are connected */
-	for(uint8_t i = 0; i < NUM_SLAVES; i++){
+	for (uint8_t i = 0; i < NUM_SLAVES; i++)
+	{
 		char success = ams_slave_test_spi(slaves[i]);
 
 		/* Check if successful */
-		if(!success){
+		if (!success)
+		{
 			blink_delay = 100; /* Error blink */
 
 			/* Send CAN message */
@@ -70,12 +75,15 @@ void setup() {
 		}
 
 		/* Setup register map */
-		// ams_slave_setup(slaves[i]);
+		ams_slave_setup(slaves[i]);
 	}
+
+	delay(2000);
 }
 
 /* LOOP */
-void loop() {
+void loop()
+{
 	/* Blink LED */
 	digitalWrite(PIN_DEBUG, HIGH);
 	delay(blink_delay);
@@ -83,8 +91,10 @@ void loop() {
 	delay(blink_delay);
 
 	/* Dump register map */
-	for(uint8_t i=0; i<NUM_SLAVES; i++){
-		for(char r=0x00; r<0x8a; r++){
+	for (uint8_t i = 0; i < NUM_SLAVES; i++)
+	{
+		for (char r = 0x00; r < 0x8a; r++)
+		{
 			/* Read values */
 			char buff;
 			ams_slave_read(slaves[i], r, &buff);
@@ -98,8 +108,7 @@ void loop() {
 			m.buf[3] = buff;
 			can.write(m);
 
-			Serial.println(buff == 0b11110000 ? "correct" : "false");
-			Serial.printf("(%d) [%d] %d\t\t- ", i, r, buff);
+			Serial.printf("(%d) [%d] ", i, r);
 			for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
 				Serial.printf("%s", (buff & x) ? "1" : "0");
 			Serial.println("");
@@ -109,13 +118,30 @@ void loop() {
 	}
 
 	/* Perform voltage scan */
-	for(uint8_t i=0; i<NUM_SLAVES; i++){
+	for (uint8_t i = 0; i < NUM_SLAVES; i++)
+	{
+		char buff;
+		ams_slave_read(slaves[i], 0x01, &buff);
+		Serial.printf("scan - 0x01: ");
+		for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
+			Serial.printf("%s", (buff & x) ? "1" : "0");
+		Serial.println("");
+
 		ams_slave_trigger_system_scan(slaves[i]);
 	}
-	for(uint8_t i=0; i<NUM_SLAVES; i++){
+	for (uint8_t i = 0; i < NUM_SLAVES; i++)
+	{
 		/* Wait until scan complete */
-		while(!ams_slave_is_idle(slaves[i])){
+		while (!ams_slave_is_idle(slaves[i]))
+		{
 			delayMicroseconds(10);
+
+			char buff;
+			ams_slave_read(slaves[i], 0x01, &buff);
+			Serial.printf("results - 0x01: ");
+			for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
+				Serial.printf("%s", (buff & x) ? "1" : "0");
+			Serial.println("");
 		}
 
 		/* Read values */
@@ -124,7 +150,8 @@ void loop() {
 
 		/* Send CAN messages */
 		uint8_t num = slaves[i]->type == TYPE_13 ? 13 : 10;
-		for(uint8_t j=0; j<num; j++){
+		for (uint8_t j = 0; j < num; j++)
+		{
 			CAN_message_t m;
 			m.id = 0x04;
 			m.buf[0] = slaves[i]->segment;
@@ -132,6 +159,12 @@ void loop() {
 			m.buf[2] = buff[j] >> 8;
 			m.buf[3] = buff[j];
 			can.write(m);
+
+			Serial.printf("VOL (%d) [%d] ", i, j);
+			for (uint8_t x = (1 << 15); x > 0; x = x >> 1)
+				Serial.printf("%s", (buff[j] & x) ? "1" : "0");
+			Serial.println("");
+
 			delayMicroseconds(10);
 		}
 	}
@@ -139,4 +172,3 @@ void loop() {
 	/* Update CAN */
 	can.events();
 }
-

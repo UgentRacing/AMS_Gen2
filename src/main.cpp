@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <FlexCAN_T4.h>
 #include "ams_slave.h"
+#include <cmath>
 
 /* Config */
 #define NUM_SLAVES 1   /* Total number of slaves */
@@ -28,6 +29,10 @@ void can_init()
 	can.onReceive(can_on_receive);
 
 	Serial.begin(115200);
+
+	delay(5000);
+
+	Serial.println("Start");
 }
 
 /* SETUP */
@@ -54,10 +59,20 @@ void setup()
 		);
 	}
 
+	Serial.println("wtf1");
+
+	char buff;
+	ams_slave_read(slaves[0], 0x00, &buff);
+
+	for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
+		Serial.printf("%s", (buff & x) ? "1" : "0");
+
 	/* Check is slaves are connected */
 	for (uint8_t i = 0; i < NUM_SLAVES; i++)
 	{
 		char success = ams_slave_test_spi(slaves[i]);
+
+		Serial.println(success);
 
 		/* Check if successful */
 		if (!success)
@@ -76,21 +91,26 @@ void setup()
 
 		/* Setup register map */
 		ams_slave_setup(slaves[i]);
+		char buff;
+		ams_slave_read(slaves[0], 0x00, &buff);
+
+		for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
+			Serial.printf("%s", (buff & x) ? "1" : "0");
 	}
 
+	Serial.println("wtf2");
+
 	delay(2000);
+	Serial.println("wtf3");
+
+	while (ams_slave_is_idle(slaves[0]))
+	{
+	}
+	Serial.println("wtf4");
 }
 
-/* LOOP */
-void loop()
+void dump_register_map()
 {
-	/* Blink LED */
-	digitalWrite(PIN_DEBUG, HIGH);
-	delay(blink_delay);
-	digitalWrite(PIN_DEBUG, LOW);
-	delay(blink_delay);
-
-	/* Dump register map */
 	for (uint8_t i = 0; i < NUM_SLAVES; i++)
 	{
 		for (char r = 0x00; r < 0x8a; r++)
@@ -108,7 +128,9 @@ void loop()
 			m.buf[3] = buff;
 			can.write(m);
 
-			Serial.printf("(%d) [%d] ", i, r);
+			Serial.printf("(%d) [", i);
+			Serial.print(r, HEX);
+			Serial.print("] ");
 			for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
 				Serial.printf("%s", (buff & x) ? "1" : "0");
 			Serial.println("");
@@ -116,73 +138,144 @@ void loop()
 			delayMicroseconds(10);
 		}
 	}
+}
 
-	Serial.println("Start scan");
+/* LOOP */
+void loop()
+{
+
+	/* Dump register map */
+	dump_register_map();
+
+	// Now try a voltage measurement (manual)
+	Serial.println("Voltage scan");
+	ams_slave_write(slaves[0], 0x02, 0b10000001);
+	Serial.println("Voltage scan init");
+	while (ams_slave_is_idle(slaves[0]))
+	{
+		Serial.println("Idle");
+		delay(100);
+	}
+	dump_register_map();
+
+	ams_slave_write(slaves[0], 0x02, 0b10000010);
+
+	while (ams_slave_is_idle(slaves[0]))
+	{
+		Serial.println("Idle");
+		delay(100);
+	}
+
+	dump_register_map();
+
+	// 	/* Read values */
+	uint16_t buff[16];
+	ams_slave_read_voltages(slaves[0], buff);
+
+	/* Send CAN messages */
+	uint8_t num = slaves[0]->type == TYPE_13 ? 13 : 10;
+
+	const double vcell_step = 73.55 * pow(10, -3); // This is in mV
+
+	for (uint8_t j = 0; j < num; j++)
+	{
+		CAN_message_t m;
+		m.id = 0x04;
+		m.buf[0] = slaves[0]->segment;
+		m.buf[1] = j;
+		m.buf[2] = buff[j] >> 8;
+		m.buf[3] = buff[j];
+		can.write(m);
+
+		Serial.printf("VOL (%d) [%d] ", 0, j);
+		Serial.print(vcell_step * buff[j] + 0.5 * vcell_step);
+		Serial.println(" mV");
+
+		delayMicroseconds(10);
+	}
+
+	delay(1000);
+
+	// while (true)
+	// {
+	// }
+
+	// Serial.println("Start scan");
 
 	/* Perform voltage scan */
-	for (uint8_t i = 0; i < NUM_SLAVES; i++)
-	{
-		ams_slave_write(slaves[i], 0x2e, 0b01011011);
-		char buff;
-		ams_slave_read(slaves[i], 0x01, &buff);
-		Serial.printf("scan - 0x01: ");
-		for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
-			Serial.printf("%s", (buff & x) ? "1" : "0");
-		Serial.println("");
+	// for (uint8_t i = 0; i < NUM_SLAVES; i++)
+	// {
+	// 	ams_slave_write(slaves[i], 0x2e, 0b01011011);
+	// 	char buff;
+	// 	ams_slave_read(slaves[i], 0x01, &buff);
+	// 	Serial.printf("scan - 0x01: ");
+	// 	for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
+	// 		Serial.printf("%s", (buff & x) ? "1" : "0");
+	// 	Serial.println("");
 
-		ams_slave_read(slaves[i], 0x2e, &buff);
-		Serial.printf("scan - 0x2e: ");
-		for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
-			Serial.printf("%s", (buff & x) ? "1" : "0");
-		Serial.println("");
-		
-		ams_slave_write(slaves[i], 0x2e, 0b01011011);
+	// 	ams_slave_read(slaves[i], 0x2e, &buff);
+	// 	Serial.printf("scan - 0x2e: ");
+	// 	for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
+	// 		Serial.printf("%s", (buff & x) ? "1" : "0");
+	// 	Serial.println("");
 
-		ams_slave_trigger_system_scan(slaves[i]);
-	}
+	// 	ams_slave_write(slaves[i], 0x2e, 0b01011011);
 
-	Serial.println("Wait scan to end");
+	// 	ams_slave_trigger_system_scan(slaves[i]);
+	// }
 
-	for (uint8_t i = 0; i < NUM_SLAVES; i++)
-	{
-		/* Wait until scan complete */
-		while (!ams_slave_is_idle(slaves[i]))
-		{
-			delayMicroseconds(10);
+	// Serial.println("Wait scan to end");
 
-			char buff;
-			ams_slave_read(slaves[i], 0x01, &buff);
-			Serial.printf("results - 0x01: ");
-			for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
-				Serial.printf("%s", (buff & x) ? "1" : "0");
-			Serial.println("");
-		}
-		Serial.println("Scan ended, readout values");
+	// for (uint8_t i = 0; i < NUM_SLAVES; i++)
+	// {
+	// 	/* Wait until scan complete */
+	// 	while (!ams_slave_is_idle(slaves[i]))
+	// 	{
+	// 		delayMicroseconds(10);
 
-		/* Read values */
-		uint16_t buff[16];
-		ams_slave_read_voltages(slaves[i], buff);
+	// 		char buff;
+	// 		ams_slave_read(slaves[i], 0x01, &buff);
+	// 		Serial.printf("results - 0x01: ");
+	// 		for (uint8_t x = (1 << 7); x > 0; x = x >> 1)
+	// 			Serial.printf("%s", (buff & x) ? "1" : "0");
+	// 		Serial.println("");
+	// 	}
+	// 	Serial.println("Scan ended, readout values");
 
-		/* Send CAN messages */
-		uint8_t num = slaves[i]->type == TYPE_13 ? 13 : 10;
-		for (uint8_t j = 0; j < num; j++)
-		{
-			CAN_message_t m;
-			m.id = 0x04;
-			m.buf[0] = slaves[i]->segment;
-			m.buf[1] = j;
-			m.buf[2] = buff[j] >> 8;
-			m.buf[3] = buff[j];
-			can.write(m);
+	// 	/* Read values */
+	// 	uint16_t buff[16];
+	// 	ams_slave_read_voltages(slaves[i], buff);
 
-			Serial.printf("VOL (%d) [%d] ", i, j);
-			for (uint8_t x = (1 << 15); x > 0; x = x >> 1)
-				Serial.printf("%s", (buff[j] & x) ? "1" : "0");
-			Serial.println("");
+	// 	// for (uint8_t y = 0; y < 15; y++) {
+	// 	// 	for (uint16_t x = (1 << 15); x > 0; x = x >> 1) {
+	// 	// 		Serial.printf("%s", (buff[y] & x) ? "1" : "0");
+	// 	// 	}
 
-			delayMicroseconds(10);
-		}
-	}
+	// 	// 	Serial.println("");
+	// 	// }
+
+	// 	/* Send CAN messages */
+	// 	uint8_t num = slaves[i]->type == TYPE_13 ? 13 : 10;
+
+	// 	const double vcell_step = 73.55 * pow(10, -3); // This is in mV
+
+	// 	for (uint8_t j = 0; j < num; j++)
+	// 	{
+	// 		CAN_message_t m;
+	// 		m.id = 0x04;
+	// 		m.buf[0] = slaves[i]->segment;
+	// 		m.buf[1] = j;
+	// 		m.buf[2] = buff[j] >> 8;
+	// 		m.buf[3] = buff[j];
+	// 		can.write(m);
+
+	// 		Serial.printf("VOL (%d) [%d] ", i, j);
+	// 		Serial.print(vcell_step * buff[j] + 0.5 * vcell_step);
+	// 		Serial.println(" mV");
+
+	// 		delayMicroseconds(10);
+	// 	}
+	// }
 
 	/* Update CAN */
 	can.events();

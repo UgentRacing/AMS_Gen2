@@ -116,7 +116,6 @@ void setup()
 {
 	if (DEBUG)
 	{
-		// delay(5000);
 		Serial.begin(115200);
 		Serial.println("[AMS_MASTER]> Setup started");
 	}
@@ -207,7 +206,7 @@ void loop()
 
 		//! Change this to the actual amount of cells
 		uint8_t num = slaves[i]->type == TYPE_13 ? 13 : 10;
-		for (uint8_t j = 0; j < 2; j++)
+		for (uint8_t j = 0; j < num; j++)
 		{
 			double voltage_level = (vcell_step * buff[j] + 0.5 * vcell_step + 65535 * vcell_step) / 2;
 

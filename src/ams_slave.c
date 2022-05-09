@@ -14,6 +14,7 @@ ams_slave *ams_slave_init(
 	/* Store config */
 	s->id = id;
 	s->segment = segment;
+	s->error_counter = 0;
 	s->type = type;
 	s->pin_chip_select = pin_chip_select;
 	s->state = INIT;
@@ -102,7 +103,7 @@ void ams_slave_setup(ams_slave *s)
 
 	// Setup
 	ams_slave_write(s, 0x01, 0b00000010);
-	ams_slave_write(s, 0x02, 0b10000010);
+	ams_slave_write(s, 0x02, 0b10011110);
 
 	ams_slave_write(s, 0x03, 0b00000000);
 	ams_slave_write(s, 0x06, 0b11011110);

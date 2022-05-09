@@ -22,6 +22,8 @@
 #define HIGH_VOLTAGE_LIMIT 4200
 #define LOW_VOLTAGE_LIMIT 2500
 
+#define ERROR_COUNTER_LAG 100
+
 /* Pin Definitions */
 #define PIN_DEBUG 14
 const uint8_t PIN_CS_SLAVE[NUM_SLAVES] = {1};
@@ -112,6 +114,7 @@ void setup()
 {
 	if (DEBUG)
 	{
+		// delay(5000);
 		Serial.begin(115200);
 		Serial.println("[AMS_MASTER]> Setup started");
 	}
@@ -140,26 +143,10 @@ void setup()
 		);
 	}
 
-	delay(5000);
-
 	/* Check if slaves are connected */
 	bool aggregatedSuccess = true;
 	for (uint8_t i = 0; i < NUM_SLAVES; i++)
 	{
-		char success = ams_slave_test_spi(slaves[i]);
-
-		/* Check if successful */
-		if (!success)
-		{
-			Serial.println("[ERROR]> Slave cannot be init'd !");
-			aggregatedSuccess = false;
-
-			uint8_t error_buff[] = {i};
-			handle_error(0x46, error_buff, 1);
-			slaves[i]->state = ERROR;
-			// continue;
-		}
-
 		/* Setup register map */
 		ams_slave_setup(slaves[i]);
 	}
@@ -213,7 +200,7 @@ void loop()
 
 		//! Change this to the actual amount of cells
 		uint8_t num = slaves[i]->type == TYPE_13 ? 13 : 10;
-		for (uint8_t j = 0; j < 1; j++)
+		for (uint8_t j = 0; j < 2; j++)
 		{
 			double voltage_level = (vcell_step * buff[j] + 0.5 * vcell_step + 65535 * vcell_step) / 2;
 
@@ -227,14 +214,19 @@ void loop()
 				Serial.printf("[WARNING]> Slave %d is in init mode\n", i);
 			}
 
-			if (voltage_level < LOW_VOLTAGE_LIMIT && slaves[i]->state == NORMAL)
+			if (slaves[i]->state == NORMAL && (voltage_level < LOW_VOLTAGE_LIMIT || voltage_level > HIGH_VOLTAGE_LIMIT))
+			{
+				slaves[i]->error_counter++;
+			}
+
+			if (voltage_level < LOW_VOLTAGE_LIMIT && slaves[i]->state == NORMAL && slaves[i]->error_counter > ERROR_COUNTER_LAG)
 			{
 				Serial.printf("ERROR (%d) [%d] : LOW_VOLTAGE_LIMIT exceeded\n", i, j);
 				uint8_t error_buff[] = {slaves[i]->segment, j, (buff[j]) >> 8, buff[j]};
 				handle_error(0x43, error_buff, 4);
 				slaves[i]->state = ERROR;
 			}
-			if (voltage_level > HIGH_VOLTAGE_LIMIT && slaves[i]->state == NORMAL)
+			if (voltage_level > HIGH_VOLTAGE_LIMIT && slaves[i]->state == NORMAL && slaves[i]->error_counter > ERROR_COUNTER_LAG)
 			{
 				Serial.printf("ERROR (%d) [%d] : HIGH_VOLTAGE_LIMIT exceeded\n", i, j);
 				uint8_t error_buff[] = {slaves[i]->segment, j, (buff[j]) >> 8, buff[j]};

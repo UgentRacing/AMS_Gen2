@@ -16,6 +16,7 @@ ams_slave *ams_slave_init(
 	s->segment = segment;
 	s->type = type;
 	s->pin_chip_select = pin_chip_select;
+	s->state = INIT;
 
 	/* Init IO */
 	pinMode(s->pin_chip_select, OUTPUT);
@@ -99,12 +100,10 @@ char ams_slave_test_spi(ams_slave *s)
 void ams_slave_setup(ams_slave *s)
 {
 
-	// ams_slave_write(s, 0x01, 0b10000000);
-	delay(500);
-	
 	// Setup
 	ams_slave_write(s, 0x01, 0b00000010);
 	ams_slave_write(s, 0x02, 0b10000010);
+
 	ams_slave_write(s, 0x03, 0b00000000);
 	ams_slave_write(s, 0x06, 0b11011110);
 	ams_slave_write(s, 0x07, 0b10000110);
@@ -112,7 +111,7 @@ void ams_slave_setup(ams_slave *s)
 	ams_slave_write(s, 0x08, 0b00000100);
 	ams_slave_write(s, 0x0a, 0b00000000);
 	ams_slave_write(s, 0x0e, 0b00000000);
-	
+
 	ams_slave_write(s, 0x11, 0b00000000);
 	ams_slave_write(s, 0x12, 0b00010000);
 	ams_slave_write(s, 0x13, 0b11111111); /* TODO TEMPERATURE */
@@ -123,7 +122,7 @@ void ams_slave_setup(ams_slave *s)
 	ams_slave_write(s, 0x18, 0b00000000); /* TODO TEMPERATURE */
 	ams_slave_write(s, 0x19, 0b11111111); /* TODO TEMPERATURE */
 	ams_slave_write(s, 0x1a, 0b00000000); /* TODO TEMPERATURE */
-	// ams_slave_write(s, 0x1b, 0b11000010); // SUS
+
 	ams_slave_write(s, 0x1c, 0b00000000);
 	ams_slave_write(s, 0x1d, 0b11111111);
 	ams_slave_write(s, 0x1e, 0b11111111);
@@ -138,37 +137,24 @@ void ams_slave_setup(ams_slave *s)
 	ams_slave_write(s, 0x27, 0b00000000); /* TODO CELL BALANCING */
 	ams_slave_write(s, 0x28, 0b00000000); /* TODO CELL BALANCING */
 	ams_slave_write(s, 0x29, 0b00000000); /* TODO CELL BALANCING */
-	 ams_slave_write(s, 0x2a, 0b00000000); /* TODO CELL BALANCING */
-	 ams_slave_write(s, 0x2b, 0b11111111); /* TODO CELL BALANCING */
-	 ams_slave_write(s, 0x2c, 0b00000000); /* TODO CELL BALANCING */
-	 ams_slave_write(s, 0x2d, 0b11111111); /* TODO CELL BALANCING */
-	 
-	 //ams_slave_write(s, 0x2e, 0b01011011);
-	 
-	 ams_slave_write(s, 0x83, 0b11111111);
-	 ams_slave_write(s, 0x84, 0b11111111);
-	 ams_slave_write(s, 0x85, 0b11111111);
-	 ams_slave_write(s, 0x86, 0b11111111);
-	 ams_slave_write(s, 0x87, 0b11111111);
-	 ams_slave_write(s, 0x88, 0b11111111);
-	 ams_slave_write(s, 0x89, 0b11111111);
+	ams_slave_write(s, 0x2a, 0b00000000); /* TODO CELL BALANCING */
+	ams_slave_write(s, 0x2b, 0b11111111); /* TODO CELL BALANCING */
+	ams_slave_write(s, 0x2c, 0b00000000); /* TODO CELL BALANCING */
+	ams_slave_write(s, 0x2d, 0b11111111); /* TODO CELL BALANCING */
+
+	ams_slave_write(s, 0x2e, 0b00000010);
+
+	ams_slave_write(s, 0x83, 0b11111111);
+	ams_slave_write(s, 0x84, 0b11111111);
+	ams_slave_write(s, 0x85, 0b11111111);
+	ams_slave_write(s, 0x86, 0b11111111);
+	ams_slave_write(s, 0x87, 0b11111111);
+	ams_slave_write(s, 0x88, 0b11111111);
+	ams_slave_write(s, 0x89, 0b11111111);
 
 	// Enable cells
-	ams_slave_write(s, 0x04, 0b00000000);
-	ams_slave_write(s, 0x05, 0b00000010);
-
-	// OWP check
-	// ams_slave_write(s, 0x24, 0b01100000);
-	delay(1000);
-	// Try to get into SCAN mode
-	// delayMicroseconds(100);
-	//ams_slave_write(s, 0x2e, 0b01011011);
-
-	// ams_slave_write(s, 0x04, 0b111110000);// s->type == TYPE_13 ? 0b11111100 : 0b11111000);
-	// ams_slave_write(s, 0x05, 0b000000001);
-
-	// // Open wire test
-	// ams_slave_write(s, 0x24, 0b01100000);
+	ams_slave_write(s, 0x04, s->type == TYPE_13 ? 0b11111100 : 0b11111000);
+	ams_slave_write(s, 0x05, s->type == TYPE_13 ? 0b01111111 : 0b00011111);
 }
 
 /* Check if slave is not busy */
@@ -195,26 +181,15 @@ void ams_slave_read_voltages(ams_slave *s, uint16_t *buff)
 {
 	char buff0, buff1;
 
-	/* Read cell enable register to se which cells are connected */
-	ams_slave_read(s, 0x04, &buff0);
-	ams_slave_read(s, 0x05, &buff1);
-	uint16_t cell_enabled = (buff0 << 8) | buff1;
-
 	/* Read voltage registers */
 	uint8_t j = 0;
 	char enabled;
 	for (uint8_t i = 0; i < 16; i++)
 	{
-		/* Only read if enabled */
-		enabled = cell_enabled & 0b1;
-		cell_enabled = cell_enabled >> 1;
-	//if(!enabled) continue;
-
 		/* Read value */
 		ams_slave_read(s, 0x30 + 2 * i, &buff0);	 /* MSB */
 		ams_slave_read(s, 0x30 + 2 * i + 1, &buff1); /* LSB */
 		buff[j] = (buff0 << 8) | buff1;
-
 		j++;
 	}
 }

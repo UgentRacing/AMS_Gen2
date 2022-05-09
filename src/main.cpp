@@ -40,6 +40,8 @@ unsigned long voltage_pub_time = millis();
 
 unsigned long voltage_limit_lag = 0;
 
+uint16_t temperature_error_counter = 0;
+
 /* CAN */
 void can_on_receive(const CAN_message_t &msg)
 {
@@ -125,6 +127,11 @@ void setup()
 
 	pinMode(SHUTDOWN_CIRCUIT_PIN, 20);
 	digitalWrite(SHUTDOWN_CIRCUIT_PIN, 1); // Zero means not ok.
+
+	pinMode(21, INPUT_PULLDOWN);
+	pinMode(19, INPUT_PULLDOWN);
+	pinMode(18, INPUT_PULLDOWN);
+	pinMode(17, INPUT_PULLDOWN);
 
 	/* Init CAN */
 	can_init();
@@ -269,6 +276,19 @@ void loop()
 	else
 	{
 		blink_delay = OK_BLINK;
+	}
+
+	// Temperature readings
+	if (temperature_error_counter > ERROR_COUNTER_LAG)
+	{
+		// Overtemp error
+		Serial.println("[ERROR]> Overtemp!");
+		uint8_t error_buff[] = {};
+		handle_error(0x41, error_buff, 0);
+	}
+	else if (!digitalRead(21) || !digitalRead(19) || !digitalRead(18) || !digitalRead(17))
+	{
+		temperature_error_counter++;
 	}
 
 	delay(10);

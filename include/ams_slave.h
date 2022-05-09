@@ -29,7 +29,7 @@ typedef enum slave_state slave_state_t;
 typedef struct {
 	uint8_t id; /* Unique ID of this slave */
 	slave_state_t state;
-	uint8_t error_counter;
+	uint16_t error_counter;
 	uint8_t segment; /* Segment where this slave is located */
 	slave_type_t type; /* Type of this slave */
 	uint8_t pin_chip_select; /* Chip Select pin for the SPI communication */

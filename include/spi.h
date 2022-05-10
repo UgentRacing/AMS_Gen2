@@ -14,10 +14,11 @@ The source code of this library is licensed under the GNU General Public License
 #define _H_SPI
 
 /* ======== CONFIG ======== */
-#define SPI_PIN_MOSI 11
+#define SPI_PIN_MOSI 11\
+
 #define SPI_PIN_MISO 12
 #define SPI_PIN_CLK 13
-#define SPI_T_4 100 /* period divided by 4 in ns */
+#define SPI_T_4 4000 /* period divided by 4 in ns */
 /* ======================== */
 
 #include <stdlib.h>

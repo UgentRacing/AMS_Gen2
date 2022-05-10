@@ -50,17 +50,20 @@ void ams_slave_write(
 	/* Enable chip */
 	digitalWriteFast(s->pin_chip_select, LOW); /* Active Low */
 
+	delayNanoseconds(10000);
+
 	/* Send data */
-	spi_send(0b00010100);	/* Slave address + Write bit */
-	delayNanoseconds(7000); /* SPI_t_WAIT */
-	spi_send(reg);			/* Register address */
-	delayNanoseconds(7000); /* SPI_t_WAIT */
-	spi_send(data);			/* Data */
+	spi_send(0b00010100);	  /* Slave address + Write bit */
+	delayNanoseconds(700000); /* SPI_t_WAIT */
+	spi_send(reg);			  /* Register address */
+	delayNanoseconds(700000); /* SPI_t_WAIT */
+	spi_send(data);			  /* Data */
 
 	/* Disable chip */
 	delayNanoseconds(250); /* SPI_t_LAG */
+	delayNanoseconds(10000);
 	digitalWriteFast(s->pin_chip_select, HIGH);
-	delayNanoseconds(7000); /* SPI_t_WAIT */
+	delayNanoseconds(700000); /* SPI_t_WAIT */
 }
 
 /* Read register over SPI */
@@ -105,57 +108,61 @@ void ams_slave_setup(ams_slave *s)
 	ams_slave_write(s, 0x01, 0b00000010);
 	ams_slave_write(s, 0x02, 0b10011110);
 
-	ams_slave_write(s, 0x03, 0b00000000);
-	ams_slave_write(s, 0x06, 0b11011110);
-	ams_slave_write(s, 0x07, 0b10000110);
+	// ams_slave_write(s, 0x1b)
 
-	ams_slave_write(s, 0x08, 0b00000100);
-	ams_slave_write(s, 0x0a, 0b00000000);
-	ams_slave_write(s, 0x0e, 0b00000000);
+	// ams_slave_write(s, 0x03, 0b00000000);
+	// ams_slave_write(s, 0x06, 0b11011110);
+	// ams_slave_write(s, 0x07, 0b10000110);
 
-	ams_slave_write(s, 0x11, 0b00000000);
-	ams_slave_write(s, 0x12, 0b00010000);
-	ams_slave_write(s, 0x13, 0b11111111); /* TODO TEMPERATURE */
-	ams_slave_write(s, 0x14, 0b00000000); /* TODO TEMPERATURE */
-	ams_slave_write(s, 0x15, 0b11111111); /* TODO TEMPERATURE */
-	ams_slave_write(s, 0x16, 0b00000000); /* TODO TEMPERATURE */
-	ams_slave_write(s, 0x17, 0b11111111); /* TODO TEMPERATURE */
-	ams_slave_write(s, 0x18, 0b00000000); /* TODO TEMPERATURE */
-	ams_slave_write(s, 0x19, 0b11111111); /* TODO TEMPERATURE */
-	ams_slave_write(s, 0x1a, 0b00000000); /* TODO TEMPERATURE */
+	// ams_slave_write(s, 0x08, 0b00000100);
+	// ams_slave_write(s, 0x0a, 0b00000000);
+	// ams_slave_write(s, 0x0e, 0b00000000);
 
-	ams_slave_write(s, 0x1c, 0b00000000);
-	ams_slave_write(s, 0x1d, 0b11111111);
-	ams_slave_write(s, 0x1e, 0b11111111);
+	// ams_slave_write(s, 0x11, 0b00000000);
+	// ams_slave_write(s, 0x12, 0b00010000);
+	// ams_slave_write(s, 0x13, 0b11111111); /* TODO TEMPERATURE */
+	// ams_slave_write(s, 0x14, 0b00000000); /* TODO TEMPERATURE */
+	// ams_slave_write(s, 0x15, 0b11111111); /* TODO TEMPERATURE */
+	// ams_slave_write(s, 0x16, 0b00000000); /* TODO TEMPERATURE */
+	// ams_slave_write(s, 0x17, 0b11111111); /* TODO TEMPERATURE */
+	// ams_slave_write(s, 0x18, 0b00000000); /* TODO TEMPERATURE */
+	// ams_slave_write(s, 0x19, 0b11111111); /* TODO TEMPERATURE */
+	// ams_slave_write(s, 0x1a, 0b00000000); /* TODO TEMPERATURE */
+
+	// ams_slave_write(s, 0x1c, 0b00000000);
+	// ams_slave_write(s, 0x1d, 0b11111111);
+	// ams_slave_write(s, 0x1e, 0b11111111);
+
 	ams_slave_write(s, 0x1f, 0b11000000);
+
 	ams_slave_write(s, 0x20, s->type == TYPE_13 ? 0b10110100 : 0b10001010);
 	ams_slave_write(s, 0x21, s->type == TYPE_13 ? 0b01101011 : 0b01010010);
-	ams_slave_write(s, 0x22, 0b01010001);
-	ams_slave_write(s, 0x23, 0b01000101);
-	ams_slave_write(s, 0x24, 0b01000000);
-	ams_slave_write(s, 0x25, 0b00000000); /* TODO CELL BALANCING */
-	ams_slave_write(s, 0x26, 0b00000000); /* TODO CELL BALANCING */
-	ams_slave_write(s, 0x27, 0b00000000); /* TODO CELL BALANCING */
-	ams_slave_write(s, 0x28, 0b00000000); /* TODO CELL BALANCING */
-	ams_slave_write(s, 0x29, 0b00000000); /* TODO CELL BALANCING */
-	ams_slave_write(s, 0x2a, 0b00000000); /* TODO CELL BALANCING */
-	ams_slave_write(s, 0x2b, 0b11111111); /* TODO CELL BALANCING */
-	ams_slave_write(s, 0x2c, 0b00000000); /* TODO CELL BALANCING */
-	ams_slave_write(s, 0x2d, 0b11111111); /* TODO CELL BALANCING */
+	// ams_slave_write(s, 0x22, 0b01010001);
+	// ams_slave_write(s, 0x23, 0b01000101);
+	// ams_slave_write(s, 0x24, 0b01000000);
+	// ams_slave_write(s, 0x25, 0b00000000); /* TODO CELL BALANCING */
+	// ams_slave_write(s, 0x26, 0b00000000); /* TODO CELL BALANCING */
+	// ams_slave_write(s, 0x27, 0b00000000); /* TODO CELL BALANCING */
+	// ams_slave_write(s, 0x28, 0b00000000); /* TODO CELL BALANCING */
+	// ams_slave_write(s, 0x29, 0b00000000); /* TODO CELL BALANCING */
+	// ams_slave_write(s, 0x2a, 0b00000000); /* TODO CELL BALANCING */
+	// ams_slave_write(s, 0x2b, 0b11111111); /* TODO CELL BALANCING */
+	// ams_slave_write(s, 0x2c, 0b00000000); /* TODO CELL BALANCING */
+	// ams_slave_write(s, 0x2d, 0b11111111); /* TODO CELL BALANCING */
 
 	ams_slave_write(s, 0x2e, 0b00000010);
 
-	ams_slave_write(s, 0x83, 0b11111111);
-	ams_slave_write(s, 0x84, 0b11111111);
-	ams_slave_write(s, 0x85, 0b11111111);
-	ams_slave_write(s, 0x86, 0b11111111);
-	ams_slave_write(s, 0x87, 0b11111111);
-	ams_slave_write(s, 0x88, 0b11111111);
-	ams_slave_write(s, 0x89, 0b11111111);
+	// ams_slave_write(s, 0x83, 0b11111111);
+	// ams_slave_write(s, 0x84, 0b11111111);
+	// ams_slave_write(s, 0x85, 0b11111111);
+	// ams_slave_write(s, 0x86, 0b11111111);
+	// ams_slave_write(s, 0x87, 0b11111111);
+	// ams_slave_write(s, 0x88, 0b11111111);
+	// ams_slave_write(s, 0x89, 0b11111111);
 
 	// Enable cells
-	ams_slave_write(s, 0x04, s->type == TYPE_13 ? 0b11111100 : 0b11111000);
-	ams_slave_write(s, 0x05, s->type == TYPE_13 ? 0b01111111 : 0b00011111);
+	ams_slave_write(s, 0x04, s->type == TYPE_13 ? 0b11111100 : TYPE_10 ? 0b11111000 : 0b00000000);
+	ams_slave_write(s, 0x05, s->type == TYPE_13 ? 0b01111111 : TYPE_10 ? 0b00011111 : 0b00000011);
 }
 
 /* Check if slave is not busy */
@@ -181,16 +188,32 @@ void ams_slave_trigger_system_scan(ams_slave *s)
 void ams_slave_read_voltages(ams_slave *s, uint16_t *buff)
 {
 	char buff0, buff1;
+	/* Read value */
+	/* Enable chip */
+	digitalWriteFast(s->pin_chip_select, LOW); /* Active Low */
+
+	/* Send data */
+	spi_send(0b00010101);	/* Slave address + Read bit */
+	delayNanoseconds(7000); /* SPI_t_WAIT */
+	spi_send(0x30);			/* Register address */
 
 	/* Read voltage registers */
 	uint8_t j = 0;
 	char enabled;
 	for (uint8_t i = 0; i < 16; i++)
 	{
-		/* Read value */
-		ams_slave_read(s, 0x30 + 2 * i, &buff0);	 /* MSB */
-		ams_slave_read(s, 0x30 + 2 * i + 1, &buff1); /* LSB */
+
+		spi_receive(&buff0); /* Write data to buffer */
+		spi_receive(&buff1); /* Write data to buffer */
+
+		// ams_slave_read(s, 0x30 + 2 * i, &buff0);	 /* MSB */
+		// ams_slave_read(s, 0x30 + 2 * i + 1, &buff1); /* LSB */
 		buff[j] = (buff0 << 8) | buff1;
 		j++;
 	}
+
+	/* Disable chip */
+	delayNanoseconds(250); /* SPI_t_LAG */
+	digitalWriteFast(s->pin_chip_select, HIGH);
+	delayNanoseconds(7000); /* SPI_t_WAIT */
 }

@@ -4,7 +4,7 @@
 #include <cmath>
 
 /* Config */
-#define NUM_SLAVES 1   /* Total number of slaves */
+#define NUM_SLAVES 10  /* Total number of slaves */
 #define NUM_SEGMENTS 1 /* Total number of segments */
 #define DEBUG 1
 #define SHUTDOWN_CIRCUIT_PIN 20
@@ -16,17 +16,17 @@
 
 #define SETUP_TIME 5000
 
-#define VOLTAGE_LIMIT_LAG 10
+#define VOLTAGE_LIMIT_LAG 1
 
 /* Voltage threshold */
 #define HIGH_VOLTAGE_LIMIT 4200
 #define LOW_VOLTAGE_LIMIT 2500
 
-#define ERROR_COUNTER_LAG 100
+#define ERROR_COUNTER_LAG 0
 
 /* Pin Definitions */
 #define PIN_DEBUG 14
-const uint8_t PIN_CS_SLAVE[NUM_SLAVES] = {1};
+const uint8_t PIN_CS_SLAVE[NUM_SLAVES] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 /* Vars */
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can;
@@ -116,6 +116,7 @@ void setup()
 {
 	if (DEBUG)
 	{
+
 		Serial.begin(115200);
 		Serial.println("[AMS_MASTER]> Setup started");
 	}
@@ -149,6 +150,17 @@ void setup()
 		);
 	}
 
+	slaves[0]->type = TYPE_13;
+	slaves[1]->type = TYPE_10;
+	slaves[2]->type = TYPE_13;
+	slaves[3]->type = TYPE_10;
+	slaves[4]->type = TYPE_13;
+	slaves[5]->type = TYPE_10;
+	slaves[6]->type = TYPE_13;
+	slaves[7]->type = TYPE_10;
+	slaves[8]->type = TYPE_13;
+	slaves[9]->type = TYPE_2;
+
 	/* Check if slaves are connected */
 	bool aggregatedSuccess = true;
 	for (uint8_t i = 0; i < NUM_SLAVES; i++)
@@ -161,11 +173,10 @@ void setup()
 	{
 		digitalWrite(SHUTDOWN_CIRCUIT_PIN, 1);
 	}
-
 	voltage_limit_lag = millis();
 }
 
-// 21 19 18 17 -- vanaf 1 'laag' fout geven
+bool quit = false;
 
 /* LOOP */
 void loop()
@@ -184,19 +195,24 @@ void loop()
 	bool areAllInitd = true;
 	bool isError = false;
 
+	if (quit) {
+		blink_delay = ERROR_BLINK;
+		return;
+	}
 	for (uint8_t i = 0; i < NUM_SLAVES; i++)
 	{
 
 		areAllInitd = areAllInitd && slaves[i]->state != INIT;
 		isError = isError || slaves[i]->state == ERROR;
 
-		if (slaves[i]->state == INIT && millis() - voltage_limit_lag > INIT_TIMEOUT)
-		{
-			Serial.printf("[ERROR]> Slave %d did not init in time!\n", 0);
-			uint8_t error_buff[] = {i};
-			handle_error(0x48, error_buff, 1);
-			slaves[i]->state = ERROR;
-		}
+		// if (slaves[i]->state == INIT && millis() - voltage_limit_lag > INIT_TIMEOUT)
+		// {
+		// 	Serial.printf("[ERROR]> Slave %d did not init in time!\n", 0);
+		// 	uint8_t error_buff[] = {i};
+		// 	handle_error(0x48, error_buff, 1);
+		// 	slaves[i]->state = ERROR;
+		// 	break;
+		// }
 
 		// Start a manual voltage measurement
 		ams_slave_write(slaves[i], 0x02, 0b10000011);
@@ -205,10 +221,11 @@ void loop()
 		ams_slave_read_voltages(slaves[i], buff);
 
 		//! Change this to the actual amount of cells
-		uint8_t num = slaves[i]->type == TYPE_13 ? 13 : 10;
+		uint8_t num = slaves[i]->type == TYPE_13 ? 13 : TYPE_10 ? 10
+																: 2;
 		for (uint8_t j = 0; j < num; j++)
 		{
-			double voltage_level = (vcell_step * buff[j] + 0.5 * vcell_step + 65535 * vcell_step) / 2;
+			double voltage_level = (vcell_step * buff[j] + 0.5 * vcell_step); // + 65535 * vcell_step) / 2;
 
 			if (buff[j] != 0 && slaves[i]->state == INIT)
 			{
@@ -231,6 +248,8 @@ void loop()
 				uint8_t error_buff[] = {slaves[i]->segment, j, (buff[j]) >> 8, buff[j]};
 				handle_error(0x43, error_buff, 4);
 				slaves[i]->state = ERROR;
+				quit = true;
+				break;
 			}
 			if (voltage_level > HIGH_VOLTAGE_LIMIT && slaves[i]->state == NORMAL && slaves[i]->error_counter > ERROR_COUNTER_LAG)
 			{
@@ -238,6 +257,8 @@ void loop()
 				uint8_t error_buff[] = {slaves[i]->segment, j, (buff[j]) >> 8, buff[j]};
 				handle_error(0x42, error_buff, 4);
 				slaves[i]->state = ERROR;
+				quit = true;
+				break;
 			}
 
 			if (publish_voltages)
@@ -261,6 +282,32 @@ void loop()
 			}
 
 			delayMicroseconds(10);
+
+			// Temperature readings
+			if (temperature_error_counter > ERROR_COUNTER_LAG)
+			{
+
+
+
+				//! Disable this whole code block if you want to disable temperature sensor errors
+				
+				
+				
+				// Overtemp error
+				Serial.println("[ERROR]> Overtemp!");
+				uint8_t error_buff[] = {};
+				handle_error(0x41, error_buff, 0);
+				isError = true;
+				quit = true;
+				break;
+			}
+			else if (!digitalRead(21) || !digitalRead(19) || !digitalRead(18) || !digitalRead(17))
+			{
+				temperature_error_counter++;
+			}
+		}
+		if (quit) {
+			break;
 		}
 	}
 
@@ -275,19 +322,6 @@ void loop()
 	else
 	{
 		blink_delay = OK_BLINK;
-	}
-
-	// Temperature readings
-	if (temperature_error_counter > ERROR_COUNTER_LAG)
-	{
-		// Overtemp error
-		Serial.println("[ERROR]> Overtemp!");
-		uint8_t error_buff[] = {};
-		handle_error(0x41, error_buff, 0);
-	}
-	else if (!digitalRead(21) || !digitalRead(19) || !digitalRead(18) || !digitalRead(17))
-	{
-		temperature_error_counter++;
 	}
 
 	delay(10);

@@ -12,7 +12,8 @@ The source code of this library is licensed under the GNU General Public License
 #include "spi.h"
 
 /* Initializes SPI */
-void spi_init(void){
+void spi_init(void)
+{
 	/* Init IO */
 	pinMode(SPI_PIN_MOSI, OUTPUT);
 	pinMode(SPI_PIN_MISO, INPUT);
@@ -22,47 +23,49 @@ void spi_init(void){
 }
 
 /* Sends data */
-void spi_send(char data){
+void spi_send(char data)
+{
 	/* Iterate over all bits */
 	uint8_t i;
-	for(i = 7; i < 8; i--){ /* MSB first, (i < 8 because unsigned int will overflow and never go below zero! */
+	for (i = 7; i < 8; i--)
+	{ /* MSB first, (i < 8 because unsigned int will overflow and never go below zero! */
 		/* Get bit to send */
 		const char bit = (data >> i) & 0b1;
 
 		/* Clock out bit */
 		digitalWriteFast(SPI_PIN_MOSI, bit);
-		delayNanoseconds(SPI_T_4); /* Setup time */
+		delayMicroseconds(SPI_T_4); /* Setup time */
 		digitalWriteFast(SPI_PIN_CLK, HIGH);
-		delayNanoseconds(SPI_T_4); /* Hold time */
-		delayNanoseconds(SPI_T_4); /* Wait time clock high */
+		delayMicroseconds(SPI_T_4); /* Hold time */
+		delayMicroseconds(SPI_T_4); /* Wait time clock high */
 		digitalWriteFast(SPI_PIN_CLK, LOW);
-		delayNanoseconds(SPI_T_4); /* Wait time clock low */
+		delayMicroseconds(SPI_T_4); /* Wait time clock low */
 	}
 	digitalWriteFast(SPI_PIN_MOSI, LOW); /* Reset MOSI */
-	delayNanoseconds(SPI_T_4); /* Wait time clock low */
+	delayMicroseconds(SPI_T_4);			 /* Wait time clock low */
 }
 
 /* Receives data */
-void spi_receive(char* buffer){
+void spi_receive(char *buffer)
+{
 	*buffer = 0b0; /* Reset Buffer */
 
-
 	/* Read 8 bits */
-	uint8_t i;
-	for(i = 0; i < 8; i++){
+	uint16_t i;
+	for (i = 0; i < 8; i++)
+	{
 		/* Clock in bit */
 		digitalWriteFast(SPI_PIN_CLK, HIGH);
-		delayNanoseconds(SPI_T_4); /* Wait time clock high */
-		delayNanoseconds(SPI_T_4); /* Wait time clock high */
-		digitalWriteFast(SPI_PIN_CLK, LOW);
-		delayNanoseconds(SPI_T_4); /* Setup time */
+		delayMicroseconds(SPI_T_4); /* Wait time clock high */
 
 		/* Store value in buffer */
 		const char bit = digitalReadFast(SPI_PIN_MISO);
+	
 		*buffer = (*buffer << 1) | bit;
 
-		delayNanoseconds(SPI_T_4); /* Setup time */
+		delayMicroseconds(SPI_T_4); /* Wait time clock high */
+		digitalWriteFast(SPI_PIN_CLK, LOW);
+		delayMicroseconds(SPI_T_4); /* Setup time */
+		delayMicroseconds(SPI_T_4); /* Setup time */
 	}
 }
-
-
